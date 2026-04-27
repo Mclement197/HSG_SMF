@@ -1,0 +1,43 @@
+[project]
+name = "hsg-smf"
+version = "0.1.0"
+description = "HSG SMF Python project"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "yfinance>=0.2.66",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+
+[tool.ruff.lint]
+select = [
+    "B",    # flake8-bugbear: likely bugs and design issues
+    "E",    # pycodestyle errors
+    "F",    # pyflakes: unused imports, undefined names, unused variables
+    "I",    # isort: import sorting
+    "RUF",  # Ruff-specific rules
+    "SIM",  # flake8-simplify: simplify redundant code
+    "UP",   # pyupgrade: modern Python syntax
+    "W",    # pycodestyle warnings
+]
+fixable = ["ALL"]
+
+[tool.ruff.lint.isort]
+force-sort-within-sections = true
+known-first-party = ["hsg_smf"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
