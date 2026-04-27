@@ -5,11 +5,15 @@ description = "HSG SMF Python project"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "pandas>=3.0.2",
+    "polars>=1.40.1",
+    "pyarrow>=24.0.0",
     "yfinance>=0.2.66",
 ]
 
 [dependency-groups]
 dev = [
+    "pandas-stubs>=3.0.0.260204",
     "ruff>=0.14.0",
 ]
 
