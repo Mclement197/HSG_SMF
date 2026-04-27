@@ -93,6 +93,11 @@ Format all Python files:
 uv run ruff format .
 ```
 
+This is the Ruff command that automatically splits long Python expressions,
+function calls, and function definitions across multiple lines where possible.
+Ruff does not automatically rewrite every long string or prose docstring, so
+those may still need manual shortening.
+
 Run the usual cleanup command:
 
 ```bash
