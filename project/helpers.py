@@ -32,7 +32,15 @@ def get_log_returns(df: pl.DataFrame) -> pl.DataFrame:
 
 
 def get_vol(df: pl.DataFrame) -> float:
-    return df.select(pl.col("log_returns").std(ddof=1).alias("vol")).item() * 250**0.5
+    if "log_returns" in df:
+        return (
+            df.select(pl.col("log_returns").std(ddof=1).alias("vol")).item() * 250**0.5
+        )
+    else:
+        df = get_log_returns(df)
+        return (
+            df.select(pl.col("log_returns").std(ddof=1).alias("vol")).item() * 250**0.5
+        )
 
 
 def get_binomial_tree(n: int) -> pl.DataFrame:
@@ -89,14 +97,34 @@ def get_binomial_tree(n: int) -> pl.DataFrame:
         .alias("parent_id")
     )
 
-    tree = tree.with_columns((pl.col("path_id") // 2).alias("parent_id"))
-
     return tree
+
+
+def normalise_terminal(df: pl.DataFrame, col: str = "C") -> pl.DataFrame:
+    df = df.filter(pl.col("t") == df.select(pl.col("t").max()).item())
+    std = df.select(pl.col(col)).std(ddof=1).item()
+    mean = df.select(pl.col(col).mean()).item()
+    df = df.with_columns((((pl.col(col)) - mean) / std).alias(f"normalised_{col}"))
+    print(df)
+    return df
+
+
+def get_arithmetic_avg_terminal(df: pl.DataFrame) -> pl.DataFrame:
+    n = df.select(pl.col("t").max()).item()
+
+    return df.filter(pl.col("t") == n).with_columns(
+        (pl.col("C") / (n + 1)).alias("S_bar")
+    )
+
+
+## Graphing functions
 
 
 def plot_binomial_tree(tree: pl.DataFrame, filename: str = "binomial_tree"):
     dot = Digraph(format="png")
     dot.attr(rankdir="LR")  # left to right tree
+    if filename == "binomial_tree":
+        filename = f"binomial_tree_{tree.select(pl.col('t').max()).item()}n"
 
     rows = tree.to_dicts()
 
@@ -113,17 +141,15 @@ def plot_binomial_tree(tree: pl.DataFrame, filename: str = "binomial_tree"):
     dot.render(filename, cleanup=True)
 
 
-def plot_all_paths(tree: pl.DataFrame, value_col: str = "S", filename: str = "paths.png"):
-    if value_col not in ["S", "C"]:
-        raise ValueError("value_col must be 'S' or 'C'")
-
+def plot_all_paths(
+    tree: pl.DataFrame, value_col: str = "S", filename: str = "paths.png"
+):
+    if filename == "paths.png":
+        filename = f"{value_col}_paths_{tree.select(pl.col('t').max()).item()}n.png"
     final_t = tree.select(pl.col("t").max()).item()
 
     final_paths = (
-        tree.filter(pl.col("t") == final_t)
-        .select("history")
-        .to_series()
-        .to_list()
+        tree.filter(pl.col("t") == final_t).select("history").to_series().to_list()
     )
 
     plt.figure()
@@ -138,11 +164,7 @@ def plot_all_paths(tree: pl.DataFrame, value_col: str = "S", filename: str = "pa
 
         path_df = pl.concat(rows).sort("t")
 
-        plt.plot(
-            path_df["t"].to_list(),
-            path_df[value_col].to_list(),
-            marker="o"
-        )
+        plt.plot(path_df["t"].to_list(), path_df[value_col].to_list(), marker="o")
 
     plt.xlabel("Time")
     plt.ylabel(value_col)
@@ -152,9 +174,36 @@ def plot_all_paths(tree: pl.DataFrame, value_col: str = "S", filename: str = "pa
     plt.close()
 
 
-ans = get_binomial_tree(5)
-print(ans)
-ans.write_excel("output.xlsx")
-plot_binomial_tree(ans)
-plot_all_paths(ans)
-plot_all_paths(ans, "C", "Paths_2")
+def plot_terminal_distribution(
+    tree: pl.DataFrame,
+    value_col: str = "C",
+    bins: int = 100,
+):
+
+    filename = f"{value_col}_terminal_distribution_{tree.select(pl.col('t').max()).item()}n.png"
+    final_t = tree.select(pl.col("t").max()).item()
+
+    terminal_values = (
+        tree.filter(pl.col("t") == final_t).select(value_col).to_series().to_list()
+    )
+
+    plt.figure(figsize=(10, 6))
+    plt.hist(terminal_values, bins=bins, density=True)
+
+    plt.xlabel(f"Terminal {value_col}")
+    plt.ylabel("Density")
+    plt.title(f"Distribution of Terminal {value_col}")
+
+    plt.savefig(filename, dpi=300)
+    plt.close()
+
+
+# ans = get_binomial_tree(25)
+# ans = get_arithmetic_avg_terminal(ans)
+# ans = normalise_terminal(ans, "S_bar")
+# print(ans)
+# plot_binomial_tree(ans)
+# plot_all_paths(ans)
+# plot_all_paths(ans, "C")
+# plot_terminal_distribution(ans, "S_bar")
+# plot_terminal_distribution(ans, "normalised_S_bar")
