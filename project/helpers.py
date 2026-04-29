@@ -10,6 +10,9 @@ import yfinance as yf
 
 os.environ["PATH"] = r"C:\Program Files\Graphviz\bin;" + os.environ["PATH"]
 
+r = 0.01
+T = 0.5
+
 
 def get_AAPL_timeseries(
     start: dt.date = dt.date(2000, 1, 1), end: dt.date | None = None
@@ -100,6 +103,16 @@ def get_binomial_tree(n: int) -> pl.DataFrame:
     return tree
 
 
+def get_q(df: pl.DataFrame = get_binomial_tree(25)) -> float:
+    n = df.select(pl.col("t").max()).item()
+    delta_t = T / n
+    vol = get_vol(get_AAPL_timeseries())
+    u = e ** (vol * delta_t**0.5)
+    d = e ** (-vol * delta_t**0.5)
+    q = (e ** (r * delta_t) - d) / (u - d)  # IG we are in a continious framework ?
+    return q
+
+
 def normalise_terminal(df: pl.DataFrame, col: str = "C") -> pl.DataFrame:
     df = df.filter(pl.col("t") == df.select(pl.col("t").max()).item())
     std = df.select(pl.col(col)).std(ddof=1).item()
@@ -117,21 +130,113 @@ def get_arithmetic_avg_terminal(df: pl.DataFrame) -> pl.DataFrame:
     )
 
 
+def get_terminal_payoff_asian_call(df: pl.DataFrame) -> pl.DataFrame:
+    df = df.filter(pl.col("t") == (df.select(pl.col("t").max()).item()))
+    if "S_bar" in df.columns:
+        df = df.with_columns(
+            (pl.col("S") - pl.col("S_bar")).clip(lower_bound=0).alias("payoff")
+        )
+    else:
+        df = get_arithmetic_avg_terminal(df)
+        df = df.with_columns(
+            (pl.col("S") - pl.col("S_bar")).clip(lower_bound=0).alias("payoff")
+        )
+    return df
+
+
+def get_backward_induction(df: pl.DataFrame) -> pl.DataFrame:
+    n = int(df.select(pl.col("t").max()).item())
+    dt = T / n
+    discount = e ** (-r * dt)
+    q = get_q(get_binomial_tree(n))
+
+    # terminal payoff
+    df = df.with_columns(
+        pl.when(pl.col("t") == n)
+        .then((pl.col("S") - (pl.col("C") / (n + 1))).clip(lower_bound=0))
+        .otherwise(None)
+        .alias("V")
+    )
+
+    for t in range(n - 1, -1, -1):
+        children = (
+            df.filter(pl.col("t") == t + 1)
+            .select(["parent_id", "move", "V"])
+            .pivot(
+                values="V",
+                index="parent_id",
+                on="move",
+            )
+            .rename(
+                {
+                    "parent_id": "path_id",
+                    "U": "V_up",
+                    "D": "V_down",
+                }
+            )
+            .with_columns(
+                (discount * (q * pl.col("V_up") + (1 - q) * pl.col("V_down"))).alias(
+                    "V_new"
+                )
+            )
+            .select(["path_id", "V_new"])
+        )
+
+        df = (
+            df.join(children, on="path_id", how="left")
+            .with_columns(
+                pl.when(pl.col("t") == t)
+                .then(pl.col("V_new"))
+                .otherwise(pl.col("V"))
+                .alias("V")
+            )
+            .drop("V_new")
+        )
+
+    return df
+
 ## Graphing functions
 
 
-def plot_binomial_tree(tree: pl.DataFrame, filename: str = "binomial_tree"):
+def plot_binomial_tree(
+    tree: pl.DataFrame,
+    filename: str = "binomial_tree",
+    show_average: bool = True,
+    show_payoff: bool = True,
+):
     dot = Digraph(format="png")
-    dot.attr(rankdir="LR")  # left to right tree
+    dot.attr(rankdir="LR")
+
+    n = int(tree.select(pl.col("t").max()).item())
+
     if filename == "binomial_tree":
-        filename = f"binomial_tree_{tree.select(pl.col('t').max()).item()}n"
+        filename = f"binomial_tree_{n}n"
+
+    # add S_bar and payoff if requested
+    tree = tree.with_columns((pl.col("C") / (pl.col("t") + 1)).alias("S_bar"))
+
+    tree = tree.with_columns(
+        pl.when(pl.col("t") == n)
+        .then((pl.col("S") - pl.col("S_bar")).clip(lower_bound=0))
+        .otherwise(None)
+        .alias("payoff")
+    )
 
     rows = tree.to_dicts()
 
     for row in rows:
         node_id = str(row["path_id"])
 
-        label = f"t={row['t']}\nS={row['S']:.2f}\nC={row['C']:.2f}\n{row['move']}"
+        label = f"t={row['t']}\nS={row['S']:.2f}\nC={row['C']:.2f}"
+
+        if show_average:
+            label += f"\nAvg={row['S_bar']:.2f}"
+
+        if show_payoff and row["payoff"] is not None:
+            label += f"\nPayoff={row['payoff']:.2f}"
+
+        if row["move"]:
+            label += f"\n{row['move']}"
 
         dot.node(node_id, label)
 
@@ -198,12 +303,101 @@ def plot_terminal_distribution(
     plt.close()
 
 
-# ans = get_binomial_tree(25)
-# ans = get_arithmetic_avg_terminal(ans)
-# ans = normalise_terminal(ans, "S_bar")
-# print(ans)
-# plot_binomial_tree(ans)
-# plot_all_paths(ans)
-# plot_all_paths(ans, "C")
-# plot_terminal_distribution(ans, "S_bar")
-# plot_terminal_distribution(ans, "normalised_S_bar")
+def plot_payoff_vs_terminal(tree: pl.DataFrame, filename="payoff_vs_ST.png"):
+    n = tree.select(pl.col("t").max()).item()
+    if filename == "payoff_vs_ST.png":
+        filename = f"payoff_vs_ST_{n}n.png"
+
+    df = tree.filter(pl.col("t") == n).with_columns(
+        [
+            (pl.col("C") / (n + 1)).alias("S_bar"),
+            (pl.col("S") - pl.col("C") / (n + 1)).clip(lower_bound=0).alias("payoff"),
+        ]
+    )
+
+    plt.figure()
+
+    plt.scatter(df["S"].to_list(), df["payoff"].to_list(), alpha=0.5)
+
+    plt.xlabel("Terminal Price $S_n$")
+    plt.ylabel("Payoff")
+    plt.title("Floating-strike Asian Call Payoff")
+
+    plt.savefig(filename, dpi=300)
+    plt.close()
+
+def plot_option_value_by_time(
+    priced_tree: pl.DataFrame,
+    filename: str = "option_value_by_time.png",
+):
+    df = priced_tree.filter(pl.col("V").is_not_null())
+
+    plt.figure(figsize=(10, 6))
+
+    for t in sorted(df["t"].unique().to_list()):
+        layer = df.filter(pl.col("t") == t)
+        plt.scatter(
+            layer["S"].to_list(),
+            layer["V"].to_list(),
+            alpha=0.6,
+            label=f"t={t}"
+        )
+
+    plt.xlabel("Stock price S")
+    plt.ylabel("Option value V")
+    plt.title("Floating-strike Asian Call Value by Time Step")
+    plt.legend()
+    plt.savefig(filename, dpi=300)
+    plt.close()
+
+def plot_backward_induction_tree(
+    df: pl.DataFrame,
+    filename: str = "backward_induction_tree",
+):
+    dot = Digraph(format="png")
+    dot.attr(rankdir="LR")
+
+    n = int(df.select(pl.col("t").max()).item())
+
+    if filename == "backward_induction_tree":
+        filename = f"backward_induction_tree_{n}n"
+
+    df = df.with_columns(
+        (pl.col("C") / (pl.col("t") + 1)).alias("S_bar")
+    )
+
+    rows = df.to_dicts()
+
+    for row in rows:
+        node_id = str(row["path_id"])
+
+        label = (
+            f"t={row['t']}\n"
+            f"S={row['S']:.2f}\n"
+            f"Avg={row['S_bar']:.2f}\n"
+            f"V={row['V']:.2f}"
+        )
+
+        if row["t"] == n:
+            label += f"\nPayoff={row['V']:.2f}"
+
+        if row["move"]:
+            label += f"\n{row['move']}"
+
+        dot.node(node_id, label)
+
+        if row["parent_id"] is not None:
+            dot.edge(str(row["parent_id"]), node_id)
+
+    dot.render(filename, cleanup=True)
+
+ans = get_binomial_tree(3)
+priced_tree = get_backward_induction(ans)
+plot_option_value_by_time(priced_tree)
+
+
+price = priced_tree.filter(pl.col("t") == 0).select("V").item()
+plot_backward_induction_tree(priced_tree)
+print(price)
+
+#13.326957086019487
