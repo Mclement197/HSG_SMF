@@ -199,7 +199,7 @@ def get_v0(n: int):
 
 def get_robustness_matrix(df: pl.DataFrame) -> pl.DataFrame:
     vol = get_vol(get_AAPL_timeseries(dt.date(2020, 1, 1), dt.date(2026, 4, 28)))
-    irates = [0.0, 0.0025, 0.005, 0.0075, 0.01, 0.0125, 0.015, 0.0175, 0.2]
+    irates = ["0.0", "0.0025", "0.005", "0.0075", "0.01 (actual)", "0.0125", "0.015", "0.0175", "0.2"]
     robustness_matrix = pl.DataFrame(
         {
             "Interest rates / Volatility": irates,
@@ -276,8 +276,8 @@ def get_robustness_matrix(df: pl.DataFrame) -> pl.DataFrame:
 
 _, tree = get_v0(25)
 
-# with pl.Config(tbl_rows=-1, tbl_cols=-1):
-# print(get_robustness_matrix(tree))
+with pl.Config(tbl_rows=-1, tbl_cols=-1):
+    print(get_robustness_matrix(tree))
 
 
 def different_n(stop: int) -> list:
@@ -288,4 +288,4 @@ def different_n(stop: int) -> list:
     return values
 
 
-print(different_n(30))
+print(different_n(25))
