@@ -280,11 +280,11 @@ with pl.Config(tbl_rows=-1, tbl_cols=-1):
     print(get_robustness_matrix(tree))
 
 
-def different_n(stop: int) -> list:
-    values = []
+def different_n(stop: int) -> dict:
+    values = {}
     for i in range(1, stop + 1, 1):
         v0, _ = get_v0(i)
-        values.append(v0)
+        values[i] = (v0)
     return values
 
 
