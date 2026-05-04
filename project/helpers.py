@@ -3,8 +3,6 @@ import datetime as dt
 from math import e
 import os
 
-from matplotlib.dates import relativedelta
-from numpy import float64
 import polars as pl
 import yfinance as yf
 
@@ -102,7 +100,7 @@ def get_binomial_tree(aapl: pl.DataFrame, n: int) -> pl.DataFrame:
     return tree
 
 
-def get_q(df: pl.DataFrame, vol: float) -> float:
+def get_q(df: pl.DataFrame, vol: float, r: float = 0.01, strict=False) -> float:
     n = df.select(pl.col("t").max()).item()
     delta_t = T / n
     u = e ** (vol * delta_t**0.5)
@@ -122,18 +120,18 @@ def normalise(df: pl.DataFrame, col: str = "C") -> pl.DataFrame:
 
 def get_arithmetic_avg(df: pl.DataFrame) -> pl.DataFrame:
     """Adds S_bar column to df"""
-    df = df.with_columns(
-        (pl.col("C") / (pl.col("t") + 1)).alias("S_bar")
-    )
+    df = df.with_columns((pl.col("C") / (pl.col("t") + 1)).alias("S_bar"))
     return df
 
 
 def get_payoff(df: pl.DataFrame) -> pl.DataFrame:
     if "S_bar" in df.columns:
         df = df.with_columns(
-            pl.when(pl.col("t") == (df.select(pl.col("t").max()).item())).then(
-            (pl.col("S") - pl.col("S_bar")).clip(lower_bound=0)
-        ).otherwise(None).alias("V"))
+            pl.when(pl.col("t") == (df.select(pl.col("t").max()).item()))
+            .then((pl.col("S") - pl.col("S_bar")).clip(lower_bound=0))
+            .otherwise(None)
+            .alias("V")
+        )
     else:
         df = get_arithmetic_avg(df)
         df = df.with_columns(
@@ -199,11 +197,95 @@ def get_v0(n: int):
     return V0, aapl_tree
 
 
-# 13.326957086019487
+def get_robustness_matrix(df: pl.DataFrame) -> pl.DataFrame:
+    vol = get_vol(get_AAPL_timeseries(dt.date(2020, 1, 1), dt.date(2026, 4, 28)))
+    irates = [0.0, 0.0025, 0.005, 0.0075, 0.01, 0.0125, 0.015, 0.0175, 0.2]
+    robustness_matrix = pl.DataFrame(
+        {
+            "Interest rates / Volatility": irates,
+            "0.2": [
+                get_q(df, 0.2, 0.0),
+                get_q(df, 0.2, 0.0025),
+                get_q(df, 0.2, 0.005),
+                get_q(df, 0.2, 0.0075),
+                get_q(df, 0.2, 0.01),
+                get_q(df, 0.2, 0.0125),
+                get_q(df, 0.2, 0.015),
+                get_q(df, 0.2, 0.0175),
+                get_q(df, 0.2, 0.02),
+            ],
+            "0.25": [
+                get_q(df, 0.25, 0.0),
+                get_q(df, 0.25, 0.0025),
+                get_q(df, 0.25, 0.005),
+                get_q(df, 0.25, 0.0075),
+                get_q(df, 0.25, 0.01),
+                get_q(df, 0.25, 0.0125),
+                get_q(df, 0.25, 0.015),
+                get_q(df, 0.25, 0.0175),
+                get_q(df, 0.25, 0.02),
+            ],
+            "0.3": [
+                get_q(df, 0.3, 0.0),
+                get_q(df, 0.3, 0.0025),
+                get_q(df, 0.3, 0.005),
+                get_q(df, 0.3, 0.0075),
+                get_q(df, 0.3, 0.01),
+                get_q(df, 0.3, 0.0125),
+                get_q(df, 0.3, 0.015),
+                get_q(df, 0.3, 0.0175),
+                get_q(df, 0.3, 0.02),
+            ],
+            "0.3130 (actual)": [
+                get_q(df, vol, 0.0),
+                get_q(df, vol, 0.0025),
+                get_q(df, vol, 0.005),
+                get_q(df, vol, 0.0075),
+                get_q(df, vol, 0.01),
+                get_q(df, vol, 0.0125),
+                get_q(df, vol, 0.015),
+                get_q(df, vol, 0.0175),
+                get_q(df, vol, 0.02),
+            ],
+            "0.35": [
+                get_q(df, 0.35, 0.0),
+                get_q(df, 0.35, 0.0025),
+                get_q(df, 0.35, 0.005),
+                get_q(df, 0.35, 0.0075),
+                get_q(df, 0.35, 0.01),
+                get_q(df, 0.35, 0.0125),
+                get_q(df, 0.35, 0.015),
+                get_q(df, 0.35, 0.0175),
+                get_q(df, 0.35, 0.02),
+            ],
+            "0.4": [
+                get_q(df, 0.4, 0.0),
+                get_q(df, 0.4, 0.0025),
+                get_q(df, 0.4, 0.005),
+                get_q(df, 0.4, 0.0075),
+                get_q(df, 0.4, 0.01),
+                get_q(df, 0.4, 0.0125),
+                get_q(df, 0.4, 0.015),
+                get_q(df, 0.4, 0.0175),
+                get_q(df, 0.4, 0.02),
+            ],
+        }
+    )
+    return robustness_matrix
 
-# aapl = get_AAPL_timeseries(dt.date(2020, 1, 1), dt.date(2026, 4, 28))
-# aapl_lr = get_log_returns(aapl)
-# vol = get_vol(aapl)
-# aapl_tree = get_binomial_tree(aapl_lr, 5)
-# print(normalise(aapl_tree))
-print(get_v0(25))
+
+_, tree = get_v0(25)
+
+# with pl.Config(tbl_rows=-1, tbl_cols=-1):
+# print(get_robustness_matrix(tree))
+
+
+def different_n(stop: int) -> list:
+    values = []
+    for i in range(1, stop + 1, 1):
+        v0, _ = get_v0(i)
+        values.append(v0)
+    return values
+
+
+print(different_n(30))
