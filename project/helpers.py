@@ -125,18 +125,8 @@ def get_arithmetic_avg(df: pl.DataFrame) -> pl.DataFrame:
 
 
 def get_payoff(df: pl.DataFrame) -> pl.DataFrame:
-    if "S_bar" in df.columns:
-        df = df.with_columns(
-            pl.when(pl.col("t") == (df.select(pl.col("t").max()).item()))
-            .then((pl.col("S") - pl.col("S_bar")).clip(lower_bound=0))
-            .otherwise(None)
-            .alias("V")
-        )
-    else:
-        df = get_arithmetic_avg(df)
-        df = df.with_columns(
-            (pl.col("S") - pl.col("S_bar")).clip(lower_bound=0).alias("V")
-        )
+    df = get_arithmetic_avg(df)
+    df = df.with_columns((pl.col("S") - pl.col("S_bar")).clip(lower_bound=0).alias("V"))
     return df
 
 
