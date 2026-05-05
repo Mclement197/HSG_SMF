@@ -16,10 +16,10 @@ def get_AAPL_timeseries(
     start: dt.date = dt.date(2000, 1, 1), end: dt.date | None = None
 ) -> pl.DataFrame:
     """Get AAPL closing prices as a Polars DataFrame."""
-  if end is None:
+    if end is None:
         end = dt.date.today()
     end = end + dt.timedelta(days=1)
-
+    
     df = pl.from_pandas(yf.download("AAPL", start, end).reset_index())
     df = df.with_columns(pl.col(df.columns[0]).alias("Date").cast(dt.date))
     df = df.with_columns(pl.col(df.columns[1]).alias("Close").cast(pl.Float64))
