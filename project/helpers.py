@@ -125,18 +125,8 @@ def get_arithmetic_avg(df: pl.DataFrame) -> pl.DataFrame:
 
 
 def get_payoff(df: pl.DataFrame) -> pl.DataFrame:
-    if "S_bar" in df.columns:
-        df = df.with_columns(
-            pl.when(pl.col("t") == (df.select(pl.col("t").max()).item()))
-            .then((pl.col("S") - pl.col("S_bar")).clip(lower_bound=0))
-            .otherwise(None)
-            .alias("V")
-        )
-    else:
-        df = get_arithmetic_avg(df)
-        df = df.with_columns(
-            (pl.col("S") - pl.col("S_bar")).clip(lower_bound=0).alias("V")
-        )
+    df = get_arithmetic_avg(df)
+    df = df.with_columns((pl.col("S") - pl.col("S_bar")).clip(lower_bound=0).alias("V"))
     return df
 
 
@@ -274,18 +264,9 @@ def get_robustness_matrix(df: pl.DataFrame) -> pl.DataFrame:
     return robustness_matrix
 
 
-_, tree = get_v0(25)
-
-# with pl.Config(tbl_rows=-1, tbl_cols=-1):
-# print(get_robustness_matrix(tree))
-
-
 def different_n(stop: int) -> dict:
     values = {}
     for i in range(1, stop + 1, 1):
         v0, _ = get_v0(i)
-        values[i] = (v0)
+        values[i] = v0
     return values
-
-
-print(different_n(25))
