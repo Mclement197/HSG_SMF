@@ -274,18 +274,9 @@ def get_robustness_matrix(df: pl.DataFrame) -> pl.DataFrame:
     return robustness_matrix
 
 
-_, tree = get_v0(25)
-
-# with pl.Config(tbl_rows=-1, tbl_cols=-1):
-# print(get_robustness_matrix(tree))
-
-
 def different_n(stop: int) -> dict:
     values = {}
     for i in range(1, stop + 1, 1):
         v0, _ = get_v0(i)
-        values[i] = (v0)
+        values[i] = v0
     return values
-
-
-print(different_n(25))
