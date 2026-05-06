@@ -12,15 +12,16 @@ r = 0.01
 T = 0.5
 
 
-def get_AAPL_timeseries(
+def get_AAPL_timeseries(ticker: str = "AAPL",
     start: dt.date = dt.date(2000, 1, 1), end: dt.date | None = None
 ) -> pl.DataFrame:
     """Get AAPL closing prices as a Polars DataFrame."""
     if end is None:
         end = dt.date.today()
-    end = end + dt.timedelta(days=1)
+    else:
+        end = end + dt.timedelta(days=1)
     
-    df = pl.from_pandas(yf.download("AAPL", start, end).reset_index())
+    df = pl.from_pandas(yf.download(ticker, start, end).reset_index())
     df = df.with_columns(pl.col(df.columns[0]).alias("Date").cast(dt.date))
     df = df.with_columns(pl.col(df.columns[1]).alias("Close").cast(pl.Float64))
     df = df.select(pl.col("Date"), pl.col("Close"))
@@ -274,34 +275,9 @@ def get_robustness_matrix(df: pl.DataFrame) -> pl.DataFrame:
     return robustness_matrix
 
 
-_, tree = get_v0(25)
-
-# with pl.Config(tbl_rows=-1, tbl_cols=-1):
-# print(get_robustness_matrix(tree))
-
-
 def different_n(stop: int) -> dict:
     values = {}
     for i in range(1, stop + 1, 1):
         v0, _ = get_v0(i)
         values[i] = (v0)
     return values
-
-
-#print(different_n(25))
-
-
-# Print stats for all V values across the tree
-print("\n--- V stats (all nodes) ---")
-print(tree.select(pl.col("V")).describe())
-
-# Print stats for leaf nodes only (final timestep)
-n = tree.select(pl.col("t").max()).item()
-v_col = tree.filter(pl.col("t") == n).select(pl.col("V")).drop_nulls()
-
-print("\n--- V stats (leaves only, t=25) ---")
-print(f"Min     : {v_col.select(pl.col('V').min()).item():.4f}")
-print(f"Max     : {v_col.select(pl.col('V').max()).item():.4f}")
-print(f"Mean    : {v_col.select(pl.col('V').mean()).item():.4f}")
-print(f"Variance: {v_col.select(pl.col('V').var(ddof=1)).item():.4f}")
-print(f"Std     : {v_col.select(pl.col('V').std(ddof=1)).item():.4f}")
