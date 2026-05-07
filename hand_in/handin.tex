@@ -121,6 +121,12 @@ compute the arithmetic average $\bar{S}_n = C_n/(n+1)$.
   \item explain how we compute the stock price at each node (Mathis)
   \item link number of nodes to numbre of periods 1+t (Juliette)
 \end{itemize}
+At each period $t$, a recombining tree has $t+1$ distinct price nodes.
+At $t=25$, this gives 26 distinct prices. However, since the Asian
+option payoff depends on the arithmetic average $\bar{S}_n$, two paths
+reaching the same final price can yield different payoffs. We therefore
+track all $2^{25} \approx 33$ million paths separately, even though
+they converge to only 26 distinct prices at maturity.
 
 \section{Arithmetic Average at Terminal Nodes}
 \label{sec:average}
