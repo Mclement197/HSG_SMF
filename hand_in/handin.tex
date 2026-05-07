@@ -101,7 +101,22 @@
 
 \begin{itemize}
   \item graph of small tree only prices (Mathis)
-  \item explain how we build the tree (Juliette)
+  \item explain how we build the tree (Juliette) 
+ \end{itemize}
+We build the binomial tree as follows. The starting point is the closing 
+price of Apple on April 28, 2026, denoted $S_0$. At each period, the 
+price either goes up (multiplied by $u$) or down (multiplied by $d$), 
+where $\Delta t = T/n = 0.02$ years. Both factors are calibrated using 
+the volatility $\sigma$ estimated from Apple's daily log-returns over 
+2020--2026. The larger $\sigma$, the larger $u$ and the smaller $d$.
+
+Starting from $S_0$, each node splits into two branches: an up-branch 
+($S \times u$) and a down-branch ($S \times d$). After 25 periods, the 
+tree contains $2^{25} \approx 33$ million possible paths. At each node, 
+we store the cumulative sum $C_t = \sum_{j=0}^{t} S_j$, needed to 
+compute the arithmetic average $\bar{S}_n = C_n/(n+1)$.
+\begin{itemize}
+  
   \item explain u and d (Mathis)
   \item explain how we compute the stock price at each node (Mathis)
   \item link number of nodes to numbre of periods 1+t (Juliette)
