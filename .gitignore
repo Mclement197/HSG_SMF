@@ -5,6 +5,9 @@ project/paths.png
 *.synctex
 *.log
 *.aux
+*.synctex.gz
+*.DS_Store
+*.log
 project/distribution_pq.png
 project/distribution_q_n25_vs._n999.png
 project/distribution_q_n25.png
