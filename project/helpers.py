@@ -3,8 +3,6 @@ import datetime as dt
 from math import e
 import os
 
-from graphviz import Digraph
-import matplotlib.pyplot as plt
 import polars as pl
 import yfinance as yf
 
@@ -14,14 +12,16 @@ r = 0.01
 T = 0.5
 
 
-def get_AAPL_timeseries(
+def get_AAPL_timeseries(ticker: str = "AAPL",
     start: dt.date = dt.date(2000, 1, 1), end: dt.date | None = None
 ) -> pl.DataFrame:
     """Get AAPL closing prices as a Polars DataFrame."""
     if end is None:
         end = dt.date.today()
-
-    df = pl.from_pandas(yf.download("AAPL", start, end).reset_index())
+    else:
+        end = end + dt.timedelta(days=1)
+    
+    df = pl.from_pandas(yf.download(ticker, start, end).reset_index())
     df = df.with_columns(pl.col(df.columns[0]).alias("Date").cast(dt.date))
     df = df.with_columns(pl.col(df.columns[1]).alias("Close").cast(pl.Float64))
     df = df.select(pl.col("Date"), pl.col("Close"))
@@ -46,9 +46,7 @@ def get_vol(df: pl.DataFrame) -> float:
         )
 
 
-def get_binomial_tree(n: int) -> pl.DataFrame:
-    aapl = get_AAPL_timeseries(dt.date(2020, 1, 1), dt.date(2026, 4, 28))
-    aapl = get_log_returns(aapl)
+def get_binomial_tree(aapl: pl.DataFrame, n: int) -> pl.DataFrame:
     vol = get_vol(aapl)
     delta_T = 0.5 / n  # 0.5 as 6 months until maturity
     u = e ** (vol * (delta_T**0.5))
@@ -103,60 +101,51 @@ def get_binomial_tree(n: int) -> pl.DataFrame:
     return tree
 
 
-def get_q(df: pl.DataFrame = get_binomial_tree(25)) -> float:
+def get_q(df: pl.DataFrame, vol: float, r: float = 0.01, strict=False) -> float:
     n = df.select(pl.col("t").max()).item()
     delta_t = T / n
-    vol = get_vol(get_AAPL_timeseries())
     u = e ** (vol * delta_t**0.5)
     d = e ** (-vol * delta_t**0.5)
-    q = (e ** (r * delta_t) - d) / (u - d)  # IG we are in a continious framework ?
+    q = (e ** (r * delta_t) - d) / (u - d)
     return q
 
 
-def normalise_terminal(df: pl.DataFrame, col: str = "C") -> pl.DataFrame:
-    df = df.filter(pl.col("t") == df.select(pl.col("t").max()).item())
+def normalise(df: pl.DataFrame, col: str = "C") -> pl.DataFrame:
+    """Adds a column called normalised_C which is the cumulative prices normalised with
+    mean and std (ddof = 1)"""
     std = df.select(pl.col(col)).std(ddof=1).item()
     mean = df.select(pl.col(col).mean()).item()
     df = df.with_columns((((pl.col(col)) - mean) / std).alias(f"normalised_{col}"))
-    print(df)
     return df
 
 
-def get_arithmetic_avg_terminal(df: pl.DataFrame) -> pl.DataFrame:
-    n = df.select(pl.col("t").max()).item()
-
-    return df.filter(pl.col("t") == n).with_columns(
-        (pl.col("C") / (n + 1)).alias("S_bar")
-    )
+def get_arithmetic_avg(df: pl.DataFrame) -> pl.DataFrame:
+    """Adds S_bar column to df"""
+    df = df.with_columns((pl.col("C") / (pl.col("t") + 1)).alias("S_bar"))
+    return df
 
 
-def get_terminal_payoff_asian_call(df: pl.DataFrame) -> pl.DataFrame:
-    df = df.filter(pl.col("t") == (df.select(pl.col("t").max()).item()))
+def get_payoff(df: pl.DataFrame) -> pl.DataFrame:
     if "S_bar" in df.columns:
         df = df.with_columns(
-            (pl.col("S") - pl.col("S_bar")).clip(lower_bound=0).alias("payoff")
+            pl.when(pl.col("t") == (df.select(pl.col("t").max()).item()))
+            .then((pl.col("S") - pl.col("S_bar")).clip(lower_bound=0))
+            .otherwise(None)
+            .alias("V")
         )
     else:
-        df = get_arithmetic_avg_terminal(df)
+        df = get_arithmetic_avg(df)
         df = df.with_columns(
-            (pl.col("S") - pl.col("S_bar")).clip(lower_bound=0).alias("payoff")
+            (pl.col("S") - pl.col("S_bar")).clip(lower_bound=0).alias("V")
         )
     return df
 
 
-def get_backward_induction(df: pl.DataFrame) -> pl.DataFrame:
+def backward_induction(df: pl.DataFrame, vol) -> pl.DataFrame:
     n = int(df.select(pl.col("t").max()).item())
     dt = T / n
     discount = e ** (-r * dt)
-    q = get_q(get_binomial_tree(n))
-
-    # terminal payoff
-    df = df.with_columns(
-        pl.when(pl.col("t") == n)
-        .then((pl.col("S") - (pl.col("C") / (n + 1))).clip(lower_bound=0))
-        .otherwise(None)
-        .alias("V")
-    )
+    q = get_q(df, vol)
 
     for t in range(n - 1, -1, -1):
         children = (
@@ -195,209 +184,100 @@ def get_backward_induction(df: pl.DataFrame) -> pl.DataFrame:
 
     return df
 
-## Graphing functions
+
+def get_v0(n: int):
+    aapl = get_AAPL_timeseries(dt.date(2020, 1, 1), dt.date(2026, 4, 28))
+    aapl_lr = get_log_returns(aapl)
+    vol = get_vol(aapl)
+    aapl_tree = get_binomial_tree(aapl_lr, n)
+    aapl_tree = normalise(aapl_tree)
+    aapl_tree = get_arithmetic_avg(aapl_tree)
+    aapl_tree = get_payoff(aapl_tree)
+    aapl_tree = backward_induction(aapl_tree, vol)
+    V0 = aapl_tree.filter(pl.col("t") == 0).select(pl.col("V")).item()
+    return V0, aapl_tree
 
 
-def plot_binomial_tree(
-    tree: pl.DataFrame,
-    filename: str = "binomial_tree",
-    show_average: bool = True,
-    show_payoff: bool = True,
-):
-    dot = Digraph(format="png")
-    dot.attr(rankdir="LR")
-
-    n = int(tree.select(pl.col("t").max()).item())
-
-    if filename == "binomial_tree":
-        filename = f"binomial_tree_{n}n"
-
-    # add S_bar and payoff if requested
-    tree = tree.with_columns((pl.col("C") / (pl.col("t") + 1)).alias("S_bar"))
-
-    tree = tree.with_columns(
-        pl.when(pl.col("t") == n)
-        .then((pl.col("S") - pl.col("S_bar")).clip(lower_bound=0))
-        .otherwise(None)
-        .alias("payoff")
+def get_robustness_matrix(df: pl.DataFrame) -> pl.DataFrame:
+    vol = get_vol(get_AAPL_timeseries(dt.date(2020, 1, 1), dt.date(2026, 4, 28)))
+    irates = [0.0, 0.0025, 0.005, 0.0075, 0.01, 0.0125, 0.015, 0.0175, 0.2]
+    robustness_matrix = pl.DataFrame(
+        {
+            "Interest rates / Volatility": irates,
+            "0.2": [
+                get_q(df, 0.2, 0.0),
+                get_q(df, 0.2, 0.0025),
+                get_q(df, 0.2, 0.005),
+                get_q(df, 0.2, 0.0075),
+                get_q(df, 0.2, 0.01),
+                get_q(df, 0.2, 0.0125),
+                get_q(df, 0.2, 0.015),
+                get_q(df, 0.2, 0.0175),
+                get_q(df, 0.2, 0.02),
+            ],
+            "0.25": [
+                get_q(df, 0.25, 0.0),
+                get_q(df, 0.25, 0.0025),
+                get_q(df, 0.25, 0.005),
+                get_q(df, 0.25, 0.0075),
+                get_q(df, 0.25, 0.01),
+                get_q(df, 0.25, 0.0125),
+                get_q(df, 0.25, 0.015),
+                get_q(df, 0.25, 0.0175),
+                get_q(df, 0.25, 0.02),
+            ],
+            "0.3": [
+                get_q(df, 0.3, 0.0),
+                get_q(df, 0.3, 0.0025),
+                get_q(df, 0.3, 0.005),
+                get_q(df, 0.3, 0.0075),
+                get_q(df, 0.3, 0.01),
+                get_q(df, 0.3, 0.0125),
+                get_q(df, 0.3, 0.015),
+                get_q(df, 0.3, 0.0175),
+                get_q(df, 0.3, 0.02),
+            ],
+            "0.3130 (actual)": [
+                get_q(df, vol, 0.0),
+                get_q(df, vol, 0.0025),
+                get_q(df, vol, 0.005),
+                get_q(df, vol, 0.0075),
+                get_q(df, vol, 0.01),
+                get_q(df, vol, 0.0125),
+                get_q(df, vol, 0.015),
+                get_q(df, vol, 0.0175),
+                get_q(df, vol, 0.02),
+            ],
+            "0.35": [
+                get_q(df, 0.35, 0.0),
+                get_q(df, 0.35, 0.0025),
+                get_q(df, 0.35, 0.005),
+                get_q(df, 0.35, 0.0075),
+                get_q(df, 0.35, 0.01),
+                get_q(df, 0.35, 0.0125),
+                get_q(df, 0.35, 0.015),
+                get_q(df, 0.35, 0.0175),
+                get_q(df, 0.35, 0.02),
+            ],
+            "0.4": [
+                get_q(df, 0.4, 0.0),
+                get_q(df, 0.4, 0.0025),
+                get_q(df, 0.4, 0.005),
+                get_q(df, 0.4, 0.0075),
+                get_q(df, 0.4, 0.01),
+                get_q(df, 0.4, 0.0125),
+                get_q(df, 0.4, 0.015),
+                get_q(df, 0.4, 0.0175),
+                get_q(df, 0.4, 0.02),
+            ],
+        }
     )
-
-    rows = tree.to_dicts()
-
-    for row in rows:
-        node_id = str(row["path_id"])
-
-        label = f"t={row['t']}\nS={row['S']:.2f}\nC={row['C']:.2f}"
-
-        if show_average:
-            label += f"\nAvg={row['S_bar']:.2f}"
-
-        if show_payoff and row["payoff"] is not None:
-            label += f"\nPayoff={row['payoff']:.2f}"
-
-        if row["move"]:
-            label += f"\n{row['move']}"
-
-        dot.node(node_id, label)
-
-        if row["parent_id"] is not None:
-            dot.edge(str(row["parent_id"]), node_id)
-
-    dot.render(filename, cleanup=True)
+    return robustness_matrix
 
 
-def plot_all_paths(
-    tree: pl.DataFrame, value_col: str = "S", filename: str = "paths.png"
-):
-    if filename == "paths.png":
-        filename = f"{value_col}_paths_{tree.select(pl.col('t').max()).item()}n.png"
-    final_t = tree.select(pl.col("t").max()).item()
-
-    final_paths = (
-        tree.filter(pl.col("t") == final_t).select("history").to_series().to_list()
-    )
-
-    plt.figure()
-
-    for path in final_paths:
-        rows = []
-
-        for k in range(len(path) + 1):
-            prefix = path[:k]
-            row = tree.filter(pl.col("history") == prefix)
-            rows.append(row)
-
-        path_df = pl.concat(rows).sort("t")
-
-        plt.plot(path_df["t"].to_list(), path_df[value_col].to_list(), marker="o")
-
-    plt.xlabel("Time")
-    plt.ylabel(value_col)
-    plt.title(f"Binomial Tree {value_col} Paths")
-
-    plt.savefig(filename, dpi=300)
-    plt.close()
-
-
-def plot_terminal_distribution(
-    tree: pl.DataFrame,
-    value_col: str = "C",
-    bins: int = 100,
-):
-
-    filename = f"{value_col}_terminal_distribution_{tree.select(pl.col('t').max()).item()}n.png"
-    final_t = tree.select(pl.col("t").max()).item()
-
-    terminal_values = (
-        tree.filter(pl.col("t") == final_t).select(value_col).to_series().to_list()
-    )
-
-    plt.figure(figsize=(10, 6))
-    plt.hist(terminal_values, bins=bins, density=True)
-
-    plt.xlabel(f"Terminal {value_col}")
-    plt.ylabel("Density")
-    plt.title(f"Distribution of Terminal {value_col}")
-
-    plt.savefig(filename, dpi=300)
-    plt.close()
-
-
-def plot_payoff_vs_terminal(tree: pl.DataFrame, filename="payoff_vs_ST.png"):
-    n = tree.select(pl.col("t").max()).item()
-    if filename == "payoff_vs_ST.png":
-        filename = f"payoff_vs_ST_{n}n.png"
-
-    df = tree.filter(pl.col("t") == n).with_columns(
-        [
-            (pl.col("C") / (n + 1)).alias("S_bar"),
-            (pl.col("S") - pl.col("C") / (n + 1)).clip(lower_bound=0).alias("payoff"),
-        ]
-    )
-
-    plt.figure()
-
-    plt.scatter(df["S"].to_list(), df["payoff"].to_list(), alpha=0.5)
-
-    plt.xlabel("Terminal Price $S_n$")
-    plt.ylabel("Payoff")
-    plt.title("Floating-strike Asian Call Payoff")
-
-    plt.savefig(filename, dpi=300)
-    plt.close()
-
-def plot_option_value_by_time(
-    priced_tree: pl.DataFrame,
-    filename: str = "option_value_by_time.png",
-):
-    df = priced_tree.filter(pl.col("V").is_not_null())
-
-    plt.figure(figsize=(10, 6))
-
-    for t in sorted(df["t"].unique().to_list()):
-        layer = df.filter(pl.col("t") == t)
-        plt.scatter(
-            layer["S"].to_list(),
-            layer["V"].to_list(),
-            alpha=0.6,
-            label=f"t={t}"
-        )
-
-    plt.xlabel("Stock price S")
-    plt.ylabel("Option value V")
-    plt.title("Floating-strike Asian Call Value by Time Step")
-    plt.legend()
-    plt.savefig(filename, dpi=300)
-    plt.close()
-
-def plot_backward_induction_tree(
-    df: pl.DataFrame,
-    filename: str = "backward_induction_tree",
-):
-    dot = Digraph(format="png")
-    dot.attr(rankdir="LR")
-
-    n = int(df.select(pl.col("t").max()).item())
-
-    if filename == "backward_induction_tree":
-        filename = f"backward_induction_tree_{n}n"
-
-    df = df.with_columns(
-        (pl.col("C") / (pl.col("t") + 1)).alias("S_bar")
-    )
-
-    rows = df.to_dicts()
-
-    for row in rows:
-        node_id = str(row["path_id"])
-
-        label = (
-            f"t={row['t']}\n"
-            f"S={row['S']:.2f}\n"
-            f"Avg={row['S_bar']:.2f}\n"
-            f"V={row['V']:.2f}"
-        )
-
-        if row["t"] == n:
-            label += f"\nPayoff={row['V']:.2f}"
-
-        if row["move"]:
-            label += f"\n{row['move']}"
-
-        dot.node(node_id, label)
-
-        if row["parent_id"] is not None:
-            dot.edge(str(row["parent_id"]), node_id)
-
-    dot.render(filename, cleanup=True)
-
-ans = get_binomial_tree(3)
-priced_tree = get_backward_induction(ans)
-plot_option_value_by_time(priced_tree)
-
-
-price = priced_tree.filter(pl.col("t") == 0).select("V").item()
-plot_backward_induction_tree(priced_tree)
-print(price)
-
-#13.326957086019487
+def different_n(stop: int) -> dict:
+    values = {}
+    for i in range(1, stop + 1, 1):
+        v0, _ = get_v0(i)
+        values[i] = (v0)
+    return values
