@@ -121,7 +121,12 @@ computed at the terminal nodes of the binomial tree ($t = 25$).
   \label{tab:stats_V}
 \end{table}
 
-
+The distribution of $A_T$ is highly right-skewed: the median is zero, meaning more than half 
+of all terminal paths yield a worthless option, i.e. $S_n < \bar{S}_n$. Notably, the standard 
+deviation (24.71) exceeds the mean (15.71), reflecting the high dispersion of payoffs. Most 
+paths expire worthless while a small number of highly favourable paths drive the mean upward. 
+The maximum payoff of 321.58 corresponds to the path where the stock price increases at every 
+period.
 
 \section{Payoff at Terminal Nodes}
 \label{sec:payoff}
