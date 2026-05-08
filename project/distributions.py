@@ -1,8 +1,10 @@
-from helpers import get_AAPL_timeseries, get_vol, get_log_returns
-import polars as pl
-from math import e, pi, sqrt, exp
-import numpy as np
+from math import e, exp, pi, sqrt
+
+from helpers import get_AAPL_timeseries, get_log_returns, get_vol
 import matplotlib.pyplot as plt
+import numpy as np
+import polars as pl
+
 
 def get_p():
     aapl = get_AAPL_timeseries()
@@ -10,6 +12,7 @@ def get_p():
     returns = log_returns.select(pl.col("log_returns")).to_series().to_list()
     hausses = sum(1 for r in returns if r > 0)
     return hausses / len(returns)
+
 
 def get_q(n):
     delta_t = 0.5 / n
@@ -19,8 +22,10 @@ def get_q(n):
     d = e ** (-vol * (delta_t**0.5))
     return (e ** (r * delta_t) - d) / (u - d)
 
+
 def normal_pdf(x, mu, sigma):
-    return (1 / sqrt(2 * pi * sigma**2)) * exp(-((x - mu)**2) / (2 * sigma**2))
+    return (1 / sqrt(2 * pi * sigma**2)) * exp(-((x - mu) ** 2) / (2 * sigma**2))
+
 
 n = 25
 p = get_p()

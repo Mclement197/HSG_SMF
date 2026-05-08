@@ -1,7 +1,8 @@
 from pathlib import Path
 
 from graphviz import Digraph
-from helpers import get_v0
+from helpers import different_n
+import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import polars as pl
 
@@ -754,5 +755,265 @@ def plot_backward_induction_tree(
     return output_path
 
 
-_, tree = get_v0(25)
-plot_option_value_by_time(tree, 25)
+def plot_aapl_timeseries(
+    df: pl.DataFrame,
+    date_col: str = "Date",
+    price_col: str = "Close",
+    show_mean: bool = True,
+    show_last: bool = True,
+    output_dir: str = "graphs",
+    filename: str = "aapl_timeseries.png",
+) -> str:
+    """
+    Plot AAPL closing price time series using the same dark theme
+    as the binomial tree graph.
+
+    Required columns:
+    - Date
+    - Close
+    """
+
+    # ── Shared visual style
+    BG = "#0f1117"
+    PANEL = "#161b22"
+    GRID = "#30363d"
+    ACCENT = "#58a6ff"
+    ORANGE = "#f59e0b"
+    GREEN = "#22c55e"
+    WHITE = "#f0f6fc"
+
+    # ── Basic checks
+    required_cols = {date_col, price_col}
+    missing = required_cols - set(df.columns)
+
+    if missing:
+        raise ValueError(f"Missing required columns: {missing}")
+
+    # ── Clean and sort data
+    plot_df = df.select(date_col, price_col).drop_nulls().sort(date_col)
+
+    if plot_df.height == 0:
+        raise ValueError("The dataframe is empty after removing null values.")
+
+    dates = plot_df[date_col].to_list()
+    prices = plot_df[price_col].to_numpy()
+
+    first_date = dates[0]
+    last_date = dates[-1]
+    last_price = prices[-1]
+    mean_price = prices.mean()
+
+    # ── Output path
+    output_path = Path(output_dir)
+    output_path.mkdir(exist_ok=True)
+    full_path = output_path / filename
+
+    # ── Plot
+    _fig, ax = plt.subplots(figsize=(14, 5), facecolor=BG)
+    ax.set_facecolor(PANEL)
+
+    ax.plot(
+        dates,
+        prices,
+        color=ACCENT,
+        linewidth=2.2,
+        label="AAPL close",
+    )
+
+    if show_mean:
+        ax.axhline(
+            mean_price,
+            color=ORANGE,
+            linestyle="--",
+            linewidth=1.6,
+            label=f"Mean = {mean_price:.2f}",
+        )
+
+    if show_last:
+        ax.axhline(
+            last_price,
+            color=GREEN,
+            linestyle="--",
+            linewidth=1.4,
+            label=f"Last = {last_price:.2f}",
+        )
+
+        ax.scatter(
+            last_date,
+            last_price,
+            color=GREEN,
+            s=55,
+            zorder=5,
+        )
+
+    # ── Labels and title
+    ax.set_title(
+        f"AAPL Closing Price Time Series\n{first_date} to {last_date}",
+        color=WHITE,
+        fontsize=15,
+        fontweight="bold",
+        pad=14,
+    )
+
+    ax.set_xlabel("Date", color=WHITE, fontsize=11)
+    ax.set_ylabel("Price", color=WHITE, fontsize=11)
+
+    # ── Axis formatting
+    ax.tick_params(axis="x", colors=WHITE)
+    ax.tick_params(axis="y", colors=WHITE)
+
+    locator = mdates.AutoDateLocator()
+    formatter = mdates.ConciseDateFormatter(locator)
+
+    ax.xaxis.set_major_locator(locator)
+    ax.xaxis.set_major_formatter(formatter)
+
+    # ── Grid and borders
+    ax.grid(True, color=GRID, linewidth=0.8, alpha=0.65)
+
+    for spine in ax.spines.values():
+        spine.set_color(GRID)
+
+    # ── Legend
+    legend = ax.legend(
+        facecolor=PANEL,
+        edgecolor=GRID,
+        labelcolor=WHITE,
+        framealpha=1,
+    )
+
+    for text in legend.get_texts():
+        text.set_color(WHITE)
+
+    plt.tight_layout()
+    plt.savefig(full_path, dpi=180, facecolor=BG)
+    plt.close()
+
+    return str(full_path)
+
+
+def plot_values_by_n(
+    values_by_n: dict[int, float],
+    output_dir: str = "graphs",
+    filename: str = "values_by_n.png",
+    title: str = "Option Value by Number of Steps",
+    y_label: str = "Value",
+) -> str:
+    """
+    Plot values indexed by n.
+
+    Example input:
+    values_by_n = {
+        1: 15.0,
+        2: 12.4,
+        3: 10.8,
+    }
+    """
+
+    if not values_by_n:
+        raise ValueError("values_by_n is empty.")
+
+    # ── Shared visual style
+    BG = "#0f1117"
+    PANEL = "#161b22"
+    GRID = "#30363d"
+    ACCENT = "#58a6ff"
+    ORANGE = "#f59e0b"
+    GREEN = "#22c55e"
+    WHITE = "#f0f6fc"
+
+    # ── Sort by n
+    sorted_items = sorted(values_by_n.items())
+    n_values = [item[0] for item in sorted_items]
+    y_values = [item[1] for item in sorted_items]
+
+    # ── Output path
+    output_path = Path(output_dir)
+    output_path.mkdir(exist_ok=True)
+    full_path = output_path / filename
+
+    # ── Plot
+    _fig, ax = plt.subplots(figsize=(14, 5), facecolor=BG)
+    ax.set_facecolor(PANEL)
+
+    ax.plot(
+        n_values,
+        y_values,
+        color=ACCENT,
+        linewidth=2.2,
+        marker="o",
+        markersize=5,
+        label=y_label,
+    )
+
+    # ── Mean line
+    mean_value = sum(y_values) / len(y_values)
+
+    ax.axhline(
+        mean_value,
+        color=ORANGE,
+        linestyle="--",
+        linewidth=1.6,
+        label=f"Mean = {mean_value:.4f}",
+    )
+
+    # ── Final value line
+    final_n = n_values[-1]
+    final_value = y_values[-1]
+
+    ax.axhline(
+        final_value,
+        color=GREEN,
+        linestyle="--",
+        linewidth=1.4,
+        label=f"Final value = {final_value:.4f}",
+    )
+
+    ax.scatter(
+        final_n,
+        final_value,
+        color=GREEN,
+        s=65,
+        zorder=5,
+    )
+
+    # ── Labels and title
+    ax.set_title(
+        title,
+        color=WHITE,
+        fontsize=15,
+        fontweight="bold",
+        pad=14,
+    )
+
+    ax.set_xlabel("Number of steps n", color=WHITE, fontsize=11)
+    ax.set_ylabel(y_label, color=WHITE, fontsize=11)
+
+    # ── Axis formatting
+    ax.tick_params(axis="x", colors=WHITE)
+    ax.tick_params(axis="y", colors=WHITE)
+
+    ax.grid(True, color=GRID, linewidth=0.8, alpha=0.65)
+
+    for spine in ax.spines.values():
+        spine.set_color(GRID)
+
+    legend = ax.legend(
+        facecolor=PANEL,
+        edgecolor=GRID,
+        labelcolor=WHITE,
+        framealpha=1,
+    )
+
+    for text in legend.get_texts():
+        text.set_color(WHITE)
+
+    plt.tight_layout()
+    plt.savefig(full_path, dpi=180, facecolor=BG)
+    plt.close()
+
+    return str(full_path)
+
+
+diff = different_n(25)
+plot_values_by_n(diff)
