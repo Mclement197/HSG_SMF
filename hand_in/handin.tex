@@ -30,6 +30,7 @@
 \lhead{\small Stochastic Methods in Finance - Assignment}
 \rhead{\small University of St.~Gallen, Spring 2026}
 \cfoot{\thepage}
+\setlength{\headheight}{14pt}
 \renewcommand{\headrulewidth}{0.4pt}
 
 % Theorem-like environments
@@ -83,7 +84,7 @@
   \vfill
   {\large Supervisor: Prof.~Enrico De Giorgi \par}
   \vspace{0.3cm}
-  {\large Submitted: 18 May 2026 \par}
+  {\large Submission Date: 18 May 2026 \par}
 \end{titlepage}
 
 \tableofcontents
@@ -96,13 +97,17 @@
   \item Small introduction (Andrea)
 \end{itemize}
 
+
+
+
 \section{Building the Binomial Tree}
 \label{sec:tree}
 
 \begin{itemize}
-  \item graph of small tree only prices (Mathis)
+  \item graph of small tree only prices (Mathis) DONE
   \item explain how we build the tree (Juliette) DONE 
  \end{itemize}
+
 We build the binomial tree as follows. The starting point is the closing 
 price of Apple on April 28, 2026, denoted $S_0$. At each period, the 
 price either goes up (multiplied by $u$) or down (multiplied by $d$), 
@@ -115,6 +120,14 @@ Starting from $S_0$, each node splits into two branches: an up-branch
 tree contains $2^{25} \approx 33$ million possible paths. At each node, 
 we store the cumulative sum $C_t = \sum_{j=0}^{t} S_j$, needed to 
 compute the arithmetic average $\bar{S}_n = C_n/(n+1)$.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[height=0.5\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_moves.png}
+  \caption{Binomial tree with 3 periods. Each node contains the stock price at that point in time.}
+  \label{fig:tree}
+\end{figure}
+
 \begin{itemize}
   
   \item explain u and d (Mathis)
@@ -128,6 +141,10 @@ reaching the same final price can yield different payoffs. We therefore
 track all $2^{25} \approx 33$ million paths separately, even though
 they converge to only 26 distinct prices at maturity.
 
+
+
+
+
 \section{Arithmetic Average at Terminal Nodes}
 \label{sec:average}
 
@@ -136,6 +153,18 @@ they converge to only 26 distinct prices at maturity.
   \item add tree with average (Mathis)
   \item Explain how we got these results (Juliette) DONE 
 \end{itemize}
+
+\begin{equation}
+  \bar{S}_n = \frac{1}{n+1} \sum_{j=0}^{n} S_j
+  \label{eq:Arithmetic Average}
+\end{equation}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[height=0.5\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_avg_moves.png}
+  \caption{Binomial tree with 3 periods. Each node contains the stock price and the average at that point in time.}
+  \label{fig:tree_avg}
+\end{figure}
 
 To compute the arithmetic average at each terminal node, we use the
 cumulative sum $C_t$ stored at each node throughout the tree. At
@@ -148,6 +177,7 @@ $\bar{S}_n = C_{25}/26$.
   \item Graphs descriptions (Andrea)
   \item calcualte skewness and kurtosis of these distributions (Erwan)
 \end{itemize}
+
 
 
 
@@ -169,6 +199,14 @@ is zero.o
   \item Tree picture (With the payoff at the terminal nodes) (Mathis)
   \item Stats (done by Juliette)
 \end{itemize}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[height=0.5\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_avg_payoff.png}
+  \caption{Extract of the first 3 nodes from the Binomial tree with 25 nodes. Here note that the payoff is only computed at the terminal nodes (t=25) and not at the intermediate nodes, the values are only for illustration and were not used for computing.}
+  \label{fig:tree_payoff}
+\end{figure}
+
 Table~\ref{tab:stats_V} reports descriptive statistics of the payoff $A_T = \max(S_n - \bar{S}_n, 0)$ 
 computed at the terminal nodes of the binomial tree ($t = 25$).
 
@@ -203,6 +241,11 @@ period.
   \item Description and interpretation of the payoff distribution (Andrea)
 \end{itemize}
 
+
+
+
+
+
 \section{Risk-Neutral Probabilities}
 \label{sec:riskneutral}
 
@@ -228,6 +271,12 @@ If $r$ were higher, $q$ would be further from $0.5$ and the two
 distributions would differ more. The fact that $q < p$ means that
 under the risk-neutral measure, the stock has slightly less chance
 of going up than in the real world.
+
+
+
+
+
+
 
 \section{Backward Induction and Option Price}
 \label{sec:backwardinduction}
@@ -257,6 +306,14 @@ leading to a lower expected payoff.
   \item compare with MC (Andrea)
 \end{itemize}
 
+
+
+
+
+
+
+
+
 \section{Robustness Check}
 \label{sec:robustness}
 
@@ -266,6 +323,12 @@ leading to a lower expected payoff.
   \item Comapre the different scenarios (Andrea)
 \end{itemize}
 
+
+
+
+
+
+
 \section{Normal Approximation}
 \label{sec:normal}
 
@@ -273,6 +336,14 @@ leading to a lower expected payoff.
   \item Values distribution (Mathis)
   \item Kurtosis and skewness of the distribution (Erwan)
 \end{itemize}
+
+
+
+
+
+
+
+
 
 \section{Conclusion}
 \label{sec:conclusion}
