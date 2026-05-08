@@ -1,0 +1,181 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{ulem}
+
+\geometry{margin=2.5cm}
+
+\begin{document}
+
+\section{Proving Q}
+
+\noindent In order to compute the risk-neutral probability q, we need to start with the Replicated riskless Payoff H, which has value $V_1 =$ $H_{\text{up}}$ or $H_{\text{down}}$ depending on the states. Then, we want to maximise the expected utility of the replicated portofolio. This will allow us to derive the results and find the risk-neutral probability q, which makes each states indiferent.
+
+\begin{center}
+\begin{equation*}
+V_1 = \alpha S_1 + \beta \cdot (1+r) =
+\left\{
+\begin{array}{ll}
+\alpha \cdot S_0 u + \beta B_0 = X_{\text{up}} \\[4pt]
+\alpha \cdot S_0 d + \beta B_0 = X_{\text{down}}
+\end{array}
+\right.
+\end{equation*}
+\end{center}
+\vspace{1em}
+
+\noindent\textbf{\uline{We want to maximise $E[u(v_1)]$:}}
+
+\vspace{0.5em}
+
+\[
+\max_{\alpha,\, \beta} \; E\!\left[u\!\left(\alpha_i S_1 + \beta_i R\right)\right]
+\quad \text{s.t.} \quad
+\alpha_i S_0 + \beta_i B_0 = V_0
+\]
+\vspace{0.2em}
+
+\noindent We maximise the Expected Utility using the Lagrangian Function:
+
+\begin{align*}
+\mathcal{L}(\alpha, \beta, \lambda)
+  &= E\!\left[u\!\left(\alpha_i S_1 + \beta_i B_1\right)\right]
+     - \lambda\!\left(\alpha_i S_0 + \beta_i B_0 - V_0\right) \\[6pt]
+  &= p \cdot u(X_u) + (1-p) \cdot u(X_d)
+     - \lambda\!\left(\alpha_i S_0 + \beta_i B_0 - V_0\right) \\[6pt]
+  &= p \cdot u(\alpha S_{u} + \beta B_0)
+     + (1-p) \cdot u(\alpha S_d + \beta B_0)
+     - \lambda\!\left(\alpha_i S_0 + \beta B_0 - V_0\right)
+\end{align*}
+
+\vspace{1.5em}
+
+\begin{align*}
+\mathcal{L}_\alpha
+  &= p \cdot u'(X_u) \cdot S_u + (1-p) \cdot u'(X_d) \cdot S_d
+     - \lambda \cdot S_0 = 0
+  \tag{I} \\[4pt]
+  &= E\!\left[u'(V_1) \cdot S_1\right] = \lambda S_0
+\end{align*}
+
+\[
+\longrightarrow \quad
+\lambda = \frac{E\!\left[u'(V_1) \cdot S_1\right]}{S_0}
+\]
+
+\[
+S_0 = \frac{1}{\lambda} \cdot E\!\left[u'(V_1) \cdot S_1\right]
+\]
+
+\vspace{2em}
+
+\begin{align*}
+\mathcal{L}_\beta
+  &= p \cdot u'(X_u) \cdot B_1 + (1-p) \cdot u'(X_d) \cdot B_1
+     - \lambda \cdot B_0 = 0
+  \tag{II} \\[4pt]
+  &= E\!\left[u'(V_1) \cdot B_1\right] = \lambda B_0
+\end{align*}
+
+\[
+\longrightarrow \quad
+\lambda = \frac{E\!\left[u'(V_1) \cdot B_1\right]}{B_0}
+\]
+
+\vspace{2em}
+
+\noindent We assume that $B_0 = 1$ and $B_1 = (1+r)$, we thus have:
+
+\[
+\frac{1}{\lambda}
+  = \frac{1}{(1+r) \cdot E\!\left[u'(V_1)\right]}
+\]
+\vspace{2em}
+
+
+\noindent$\longrightarrow$ \underline{Substitute II in I:}
+\[
+S_0 = \frac{1}{1+r} \cdot \frac{E\!\left[u'(V_1) \cdot S_1\right]}{E\!\left[u'(V_1)\right]}
+\]
+
+\vspace{1.5em}
+
+\noindent \textbf{\underline{We define the variable $Z$}}, which represents the marginal utility of $V_1$ divided by the
+expected value of the marginal utility of $V_1$:
+\[
+Z = \frac{u'(V_1)}{E^P\!\left[u'(V_1)\right]}
+\]
+\vspace{0.1em}
+
+\noindent Since $V_1$ can take two values, $Z$ takes also two values:
+\[
+Z_{\text{up}} =
+  \frac{u'(X_{\text{up}})}
+       {p \cdot u'(X_{\text{up}}) + (1-p) \cdot u'(X_{\text{down}})}
+\qquad\qquad
+Z_{\text{down}} =
+  \frac{u'(X_{\text{down}})}
+       {p \cdot u'(X_{\text{up}}) + (1-p) \cdot u'(X_{\text{down}})}
+\]
+
+\vspace{1.5em}
+
+\noindent\uline{$Z$ has two properties:}
+
+\begin{enumerate}
+  \item Since we assume increasing utility $\bigl(u'(V_1) > 0\bigr)$:
+        \quad $Z > 0$ \quad $\forall\, \mathbb{R}$
+
+  \vspace{0.6em}
+
+  \item The expected value of $Z$ is equal to 1:
+        \[
+          E^P[Z]
+          = E^P\!\left[\frac{u'(V_1)}{E^P\!\left[u'(V_1)\right]}\right]
+          = \frac{E^P\!\left[u'(V_1)\right]}{E^P\!\left[u'(V_1)\right]}
+          = 1
+        \]
+\end{enumerate}
+
+\vspace{1.5em}
+
+\noindent Therefore, we can rewrite equation iii as:
+\begin{align*}
+              & S_0 = \frac{1}{1+r} \cdot E^P\!\left[Z \cdot S_1\right] \\[0.5pt]
+\intertext{\footnotesize Where: \quad $E^P\!\left[Z \cdot S_1\right] = p \cdot Z_{\text{up}} \cdot S_{0,u} + (1-p) \cdot Z_{\text{down}} \cdot S_{0,d}$}
+\\[-8pt]
+\longrightarrow \quad & S_0 = \frac{1}{1+r} \cdot p \cdot Z_{\text{up}} \cdot S_{0,u} + (1-p) \cdot Z_{\text{down}} \cdot S_{0,d}
+\end{align*}
+
+\vspace{1.5em}
+
+\noindent By dividing both sides by $S_0$, we get:
+\[
+1 + r = p \cdot Z_{\text{up}} \cdot u + (1-p) \cdot Z_{\text{down}} \cdot d
+\]
+
+\vspace{1.5em}
+
+\noindent We define $q$ and $(1-q)$ as:
+\[
+q = p \cdot Z_{\text{up}}
+  = p \cdot \frac{u'(X_{\text{up}})}{E\!\left[u'(V_1)\right]}
+\qquad \text{and} \qquad
+1-q = (1-p) \cdot Z_{\text{down}}
+       = (1-p) \cdot \frac{u'(X_{\text{down}})}{E\!\left[u'(V_1)\right]}
+\]
+\vspace{1.5em}
+
+We thus have: 
+\begin{align*}
+\longrightarrow \quad & 1 + r = q \cdot u + (1-q) \cdot d \\[6pt]
+                      & 1 + r = q(u - d) + d
+\end{align*}
+
+\[
+\boxed{ q = \frac{(1+r) - d}{u - d} }
+\]
+
+\noindent -> still adding text
+\end{document}
