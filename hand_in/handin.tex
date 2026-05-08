@@ -99,6 +99,10 @@
 \section{Building the Binomial Tree}
 \label{sec:tree}
 
+\section{Arithmetic Average at Terminal Nodes}
+\label{sec:average}
+\section{Payoff at Terminal Nodes}
+\label{sec:payoff}
 \begin{itemize}
   \item graph of small tree only prices (Mathis)
   \item explain how we build the tree (Juliette) 
@@ -158,6 +162,13 @@ computed at the terminal nodes of the binomial tree ($t = 25$).
     \toprule
     Statistic & Value (\$) \\
     \midrule
+    Count     & $6.71 \times 10^7$ \\
+    Mean      & 15.59 \\
+    Std       & 23.05 \\
+    Min       & 0.00 \\
+    25\%      & 0.00 \\
+    Median    & 4.49 \\
+    75\%      & 23.57 \\
     Count     & $3.36 \times 10^7$ \\
     Mean      & 15.71 \\
     Std       & 24.71 \\
@@ -172,6 +183,13 @@ computed at the terminal nodes of the binomial tree ($t = 25$).
   \label{tab:stats_V}
 \end{table}
 
+The distribution of $A_T$ is highly right-skewed: the median (4.49) is well below the mean 
+(15.59). More than 25\% of terminal nodes have a payoff of zero, reflecting paths where 
+$S_n < \bar{S}_n$, i.e. the terminal stock price falls below the arithmetic average and the 
+option expires worthless. The maximum payoff of 321.58 corresponds to the most favourable 
+path, where the stock price increases at every period.
+\section{Payoff at Terminal Nodes}
+\label{sec:payoff}
 The distribution of $A_T$ is highly right-skewed: the median is zero, meaning more than half 
 of all terminal paths yield a worthless option, i.e. $S_n < \bar{S}_n$. Notably, the standard 
 deviation (24.71) exceeds the mean (15.71), reflecting the high dispersion of payoffs. Most 
@@ -181,6 +199,19 @@ period.
 
 \section{Risk-Neutral Probabilities}
 \label{sec:riskneutral}
+
+\section{Backward Induction and Option Price}
+\label{sec:backwardinduction}
+
+\section{Robustness Check}
+\label{sec:robustness}
+
+\section{Normal Approximation}
+\label{sec:normal}
+
+\section{Conclusion}
+\label{sec:conclusion}
+
 
 \begin{itemize}
   \item intro why we need q (Erwan)
