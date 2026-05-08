@@ -19,6 +19,7 @@
 \usepackage{subcaption}
 \usepackage{listings}
 \usepackage{lmodern}
+\usepackage{graphicx}
 
 % Page geometry
 \geometry{top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm}
@@ -90,6 +91,10 @@
 
 \section{Introduction}
 \label{sec:intro}
+\begin{itemize}
+  \item Graph of appl (Andrea)
+  \item Small introduction (Andrea)
+\end{itemize}
 
 \section{Building the Binomial Tree}
 \label{sec:tree}
@@ -98,6 +103,56 @@
 \label{sec:average}
 \section{Payoff at Terminal Nodes}
 \label{sec:payoff}
+\begin{itemize}
+  \item graph of small tree only prices (Mathis)
+  \item explain how we build the tree (Juliette) 
+ \end{itemize}
+We build the binomial tree as follows. The starting point is the closing 
+price of Apple on April 28, 2026, denoted $S_0$. At each period, the 
+price either goes up (multiplied by $u$) or down (multiplied by $d$), 
+where $\Delta t = T/n = 0.02$ years. Both factors are calibrated using 
+the volatility $\sigma$ estimated from Apple's daily log-returns over 
+2020--2026. The larger $\sigma$, the larger $u$ and the smaller $d$.
+
+Starting from $S_0$, each node splits into two branches: an up-branch 
+($S \times u$) and a down-branch ($S \times d$). After 25 periods, the 
+tree contains $2^{25} \approx 33$ million possible paths. At each node, 
+we store the cumulative sum $C_t = \sum_{j=0}^{t} S_j$, needed to 
+compute the arithmetic average $\bar{S}_n = C_n/(n+1)$.
+\begin{itemize}
+  
+  \item explain u and d (Mathis)
+  \item explain how we compute the stock price at each node (Mathis)
+  \item link number of nodes to numbre of periods 1+t (Juliette)
+\end{itemize}
+
+\section{Arithmetic Average at Terminal Nodes}
+\label{sec:average}
+
+\begin{itemize}
+  \item add formula for average (Mathis)
+  \item add tree with average (Mathis)
+  \item Explain how we got these results (Juliette)
+  \item add distributions (2x2 graph): C (distribution + Paths), S-bar (distribution), S (distribution) (Mathis) 
+  \item Graphs descriptions (Andrea)
+  \item calcualte skewness and kurtosis of these distributions (Erwan)
+\end{itemize}
+
+
+
+\section{Payoff at Terminal Nodes}
+\label{sec:payoff}
+
+\begin{itemize}
+  \item explain the payoff (Andrea)
+  \item add formula (Andrea)
+  \item Explain how we got these results (Juliette)
+  \item Tree picture (With the payoff at the terminal nodes) (Mathis)
+  \item Stats (done by Juliette)
+  \item Payoff distribution (Terminal Nodes) (Mathis)
+  \item Description and interpretation of the payoff distribution (Andrea)
+\end{itemize}
+
 Table~\ref{tab:stats_V} reports descriptive statistics of the payoff $A_T = \max(S_n - \bar{S}_n, 0)$ 
 computed at the terminal nodes of the binomial tree ($t = 25$).
 
@@ -114,6 +169,13 @@ computed at the terminal nodes of the binomial tree ($t = 25$).
     25\%      & 0.00 \\
     Median    & 4.49 \\
     75\%      & 23.57 \\
+    Count     & $3.36 \times 10^7$ \\
+    Mean      & 15.71 \\
+    Std       & 24.71 \\
+    Min       & 0.00 \\
+    25\%      & 0.00 \\
+    Median    & 0.00 \\
+    75\%      & 24.65 \\
     Max       & 321.58 \\
     \bottomrule
   \end{tabular}
@@ -128,6 +190,12 @@ option expires worthless. The maximum payoff of 321.58 corresponds to the most f
 path, where the stock price increases at every period.
 \section{Payoff at Terminal Nodes}
 \label{sec:payoff}
+The distribution of $A_T$ is highly right-skewed: the median is zero, meaning more than half 
+of all terminal paths yield a worthless option, i.e. $S_n < \bar{S}_n$. Notably, the standard 
+deviation (24.71) exceeds the mean (15.71), reflecting the high dispersion of payoffs. Most 
+paths expire worthless while a small number of highly favourable paths drive the mean upward. 
+The maximum payoff of 321.58 corresponds to the path where the stock price increases at every 
+period.
 
 \section{Risk-Neutral Probabilities}
 \label{sec:riskneutral}
@@ -145,4 +213,58 @@ path, where the stock price increases at every period.
 \label{sec:conclusion}
 
 
+\begin{itemize}
+  \item intro why we need q (Erwan)
+  \item proof of q (Erwan)
+  \item explain relation with vol and interest rate (Erwan)
+  \item Matrix vol interest rate (Mathis)
+  \item Interpretation of q matrix (Erwan)
+  \item show result of q (Erwan)
+  \item Distribution of the payoff under q vs p (Juliette)
+  \item Description of the differences between the two distributions (Juliette)
+\end{itemize}
+
+\section{Backward Induction and Option Price}
+\label{sec:backwardinduction}
+
+\begin{itemize}
+  \item explain backward induction depends on q and how we get the result (Mathis)
+  \item graph of the tree with values (Mathis)
+  \item Presentation of our result (Juliette)
+  \item show the price of the option being the same with different paths (Erwan)
+  \item compare with MC (Andrea)
+\end{itemize}
+
+\section{Robustness Check}
+\label{sec:robustness}
+
+\begin{itemize}
+  \item matrix with different q same as earlier before (Mathis)
+  \item Compare price with MC 2std fixed strike (Andrea) 
+  \item Comapre the different scenarios (Andrea)
+\end{itemize}
+
+\section{Normal Approximation}
+\label{sec:normal}
+
+\begin{itemize}
+  \item Values distribution (Mathis)
+  \item Kurtosis and skewness of the distribution (Erwan)
+\end{itemize}
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+\begin{itemize}
+  \item summary of the results (Andrea)
+  \item limitations of the model (Andrea)
+  \begin{itemize}
+    \item comparaison with MC (Andrea)
+  \end{itemize}
+  \item possible extensions (Juliette)
+  \begin{itemize}
+    \item more iterations, more periods... (Juliette)
+  \end{itemize}
+  \item final remarks (Erwan)
+\end{itemize}
 \end{document}
