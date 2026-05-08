@@ -14,11 +14,11 @@ T = 0.5
 
 def get_AAPL_timeseries(
     ticker: str = "AAPL",
-    start: dt.date = dt.date(2000, 1, 1),
+    start: dt.date = dt.date(2020, 1, 1),
     end: dt.date | None = None,
 ) -> pl.DataFrame:
     """Get AAPL closing prices as a Polars DataFrame."""
-    end = dt.date.today() if end is None else end + dt.timedelta(days=1)
+    end = dt.date(2026,4,29) if end is None else end + dt.timedelta(days=1)
 
     df = pl.from_pandas(yf.download(ticker, start, end).reset_index())
     df = df.with_columns(pl.col(df.columns[0]).alias("Date").cast(dt.date))
@@ -102,6 +102,7 @@ def get_binomial_tree(aapl: pl.DataFrame, n: int) -> pl.DataFrame:
 
 def get_q(df: pl.DataFrame, vol: float, r: float = 0.01, strict=False) -> float:
     n = df.select(pl.col("t").max()).item()
+    df = df.filter(pl.col("t") == n)
     delta_t = T / n
     u = e ** (vol * delta_t**0.5)
     d = e ** (-vol * delta_t**0.5)
@@ -145,6 +146,7 @@ def backward_induction(df: pl.DataFrame, vol) -> pl.DataFrame:
     dt = T / n
     discount = e ** (-r * dt)
     q = get_q(df, vol)
+    print(f"q is: {q}")
 
     for t in range(n - 1, -1, -1):
         children = (
@@ -185,7 +187,7 @@ def backward_induction(df: pl.DataFrame, vol) -> pl.DataFrame:
 
 
 def get_v0(n: int):
-    aapl = get_AAPL_timeseries(dt.date(2020, 1, 1), dt.date(2026, 4, 28))
+    aapl = get_AAPL_timeseries("AAPL", dt.date(2020, 1, 1), dt.date(2026, 4, 28))
     aapl_lr = get_log_returns(aapl)
     vol = get_vol(aapl)
     aapl_tree = get_binomial_tree(aapl_lr, n)
@@ -198,7 +200,7 @@ def get_v0(n: int):
 
 
 def get_robustness_matrix(df: pl.DataFrame) -> pl.DataFrame:
-    vol = get_vol(get_AAPL_timeseries(dt.date(2020, 1, 1), dt.date(2026, 4, 28)))
+    vol = get_vol(get_AAPL_timeseries("AAPL", dt.date(2020, 1, 1), dt.date(2026, 4, 28)))
     irates = [0.0, 0.0025, 0.005, 0.0075, 0.01, 0.0125, 0.015, 0.0175, 0.2]
     robustness_matrix = pl.DataFrame(
         {
