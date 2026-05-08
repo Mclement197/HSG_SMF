@@ -12,15 +12,14 @@ r = 0.01
 T = 0.5
 
 
-def get_AAPL_timeseries(ticker: str = "AAPL",
-    start: dt.date = dt.date(2000, 1, 1), end: dt.date | None = None
+def get_AAPL_timeseries(
+    ticker: str = "AAPL",
+    start: dt.date = dt.date(2000, 1, 1),
+    end: dt.date | None = None,
 ) -> pl.DataFrame:
     """Get AAPL closing prices as a Polars DataFrame."""
-    if end is None:
-        end = dt.date.today()
-    else:
-        end = end + dt.timedelta(days=1)
-    
+    end = dt.date.today() if end is None else end + dt.timedelta(days=1)
+
     df = pl.from_pandas(yf.download(ticker, start, end).reset_index())
     df = df.with_columns(pl.col(df.columns[0]).alias("Date").cast(dt.date))
     df = df.with_columns(pl.col(df.columns[1]).alias("Close").cast(pl.Float64))
@@ -279,5 +278,5 @@ def different_n(stop: int) -> dict:
     values = {}
     for i in range(1, stop + 1, 1):
         v0, _ = get_v0(i)
-        values[i] = (v0)
+        values[i] = v0
     return values
