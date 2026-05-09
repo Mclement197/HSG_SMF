@@ -14,11 +14,11 @@
 
 \begin{center}
 \begin{equation*}
-V_1 = \alpha S_1 + \beta \cdot (1+r) =
+V_1 = \alpha S_1 + \beta \cdot B_1 =
 \left\{
 \begin{array}{ll}
-\alpha \cdot S_0 u + \beta B_0 = X_{\text{up}} \\[4pt]
-\alpha \cdot S_0 d + \beta B_0 = X_{\text{down}}
+\alpha \cdot S_0 \cdot u + \beta B_1 = X_{\text{up}} \\[4pt]
+\alpha \cdot S_0 \cdot d + \beta B_1 = X_{\text{down}}
 \end{array}
 \right.
 \end{equation*}
@@ -30,9 +30,9 @@ V_1 = \alpha S_1 + \beta \cdot (1+r) =
 \vspace{0.5em}
 
 \[
-\max_{\alpha,\, \beta} \; E\!\left[u\!\left(\alpha_i S_1 + \beta_i R\right)\right]
+\max_{\alpha,\, \beta} \; E\!\left[u\!\left(\alpha S_1 + \beta \cdot B_1\right)\right]
 \quad \text{s.t.} \quad
-\alpha_i S_0 + \beta_i B_0 = V_0
+\alpha S_0 + \beta B_0 = V_0
 \]
 \vspace{0.2em}
 
@@ -40,20 +40,20 @@ V_1 = \alpha S_1 + \beta \cdot (1+r) =
 
 \begin{align*}
 \mathcal{L}(\alpha, \beta, \lambda)
-  &= E\!\left[u\!\left(\alpha_i S_1 + \beta_i B_1\right)\right]
-     - \lambda\!\left(\alpha_i S_0 + \beta_i B_0 - V_0\right) \\[6pt]
-  &= p \cdot u(X_u) + (1-p) \cdot u(X_d)
-     - \lambda\!\left(\alpha_i S_0 + \beta_i B_0 - V_0\right) \\[6pt]
-  &= p \cdot u(\alpha S_{u} + \beta B_0)
-     + (1-p) \cdot u(\alpha S_d + \beta B_0)
-     - \lambda\!\left(\alpha_i S_0 + \beta B_0 - V_0\right)
+  &= E\!\left[u\!\left(\alpha S_1 + \beta B_1\right)\right]
+     - \lambda\!\left(\alpha S_0 + \beta B_0 - V_0\right) \\[6pt]
+  &= p \cdot u(X_{\text{up}}) + (1-p) \cdot u(X_{\text{down}})
+     - \lambda\!\left(\alpha S_0 + \beta B_0 - V_0\right) \\[6pt]
+  &= p \cdot u(\alpha S_0 \cdot u + \beta B_1)
+     + (1-p) \cdot u(\alpha S_0 \cdot d + \beta B_1)
+     - \lambda\!\left(\alpha S_0 + \beta B_0 - V_0\right)
 \end{align*}
 
 \vspace{1.5em}
 
 \begin{align*}
 \mathcal{L}_\alpha
-  &= p \cdot u'(X_u) \cdot S_u + (1-p) \cdot u'(X_d) \cdot S_d
+  &= p \cdot u'(X_{\text{up}}) \cdot S_0 \cdot u + (1-p) \cdot u'(X_{\text{down}}) \cdot S_0 \cdot d
      - \lambda \cdot S_0 = 0
   \tag{I} \\[4pt]
   &= E\!\left[u'(V_1) \cdot S_1\right] = \lambda S_0
@@ -72,7 +72,7 @@ S_0 = \frac{1}{\lambda} \cdot E\!\left[u'(V_1) \cdot S_1\right]
 
 \begin{align*}
 \mathcal{L}_\beta
-  &= p \cdot u'(X_u) \cdot B_1 + (1-p) \cdot u'(X_d) \cdot B_1
+  &= p \cdot u'(X_{\text{up}}) \cdot B_1 + (1-p) \cdot u'(X_{\text{down}}) \cdot B_1
      - \lambda \cdot B_0 = 0
   \tag{II} \\[4pt]
   &= E\!\left[u'(V_1) \cdot B_1\right] = \lambda B_0
@@ -95,11 +95,13 @@ S_0 = \frac{1}{\lambda} \cdot E\!\left[u'(V_1) \cdot S_1\right]
 
 
 \noindent$\longrightarrow$ \underline{Substitute II in I:}
-\[
-S_0 = \frac{1}{1+r} \cdot \frac{E\!\left[u'(V_1) \cdot S_1\right]}{E\!\left[u'(V_1)\right]}
-\]
+\begin{align*}
+S_0
+  &= \frac{1}{1+r} \cdot \frac{E\!\left[u'(V_1) \cdot S_1\right]}{E\!\left[u'(V_1)\right]}
+  \tag{III} \\[4pt]
+\end{align*}
 
-\vspace{1.5em}
+\vspace{1em}
 
 \noindent \textbf{\underline{We define the variable $Z$}}, which represents the marginal utility of $V_1$ divided by the
 expected value of the marginal utility of $V_1$:
@@ -140,22 +142,22 @@ Z_{\text{down}} =
 
 \vspace{1.5em}
 
-\noindent Therefore, we can rewrite equation iii as:
+\noindent Therefore, we can rewrite equation III as:
 \begin{align*}
               & S_0 = \frac{1}{1+r} \cdot E^P\!\left[Z \cdot S_1\right] \\[0.5pt]
-\intertext{\footnotesize Where: \quad $E^P\!\left[Z \cdot S_1\right] = p \cdot Z_{\text{up}} \cdot S_{0,u} + (1-p) \cdot Z_{\text{down}} \cdot S_{0,d}$}
+\intertext{\footnotesize Where: \quad $E^P\!\left[Z \cdot S_1\right] = p \cdot Z_{\text{up}} \cdot S_0 \cdot u + (1-p) \cdot Z_{\text{down}} \cdot S_0 \cdot d$}
 \\[-8pt]
 \longrightarrow \quad & S_0 = \frac{1}{1+r} \cdot p \cdot Z_{\text{up}} \cdot S_{0,u} + (1-p) \cdot Z_{\text{down}} \cdot S_{0,d}
 \end{align*}
 
-\vspace{1.5em}
+\vspace{1em}
 
 \noindent By dividing both sides by $S_0$, we get:
 \[
 1 + r = p \cdot Z_{\text{up}} \cdot u + (1-p) \cdot Z_{\text{down}} \cdot d
 \]
 
-\vspace{1.5em}
+\vspace{1em}
 
 \noindent We define $q$ and $(1-q)$ as:
 \[
@@ -165,7 +167,12 @@ q = p \cdot Z_{\text{up}}
 1-q = (1-p) \cdot Z_{\text{down}}
        = (1-p) \cdot \frac{u'(X_{\text{down}})}{E\!\left[u'(V_1)\right]}
 \]
-\vspace{1.5em}
+
+\vspace{0.1em}
+
+
+
+\vspace{1em}
 
 We thus have: 
 \begin{align*}
