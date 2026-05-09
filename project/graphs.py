@@ -7,6 +7,18 @@ from matplotlib.ticker import MaxNLocator
 import numpy as np
 import polars as pl
 
+from helpers import get_v0
+import datetime as dt
+
+from helpers import (
+    get_AAPL_timeseries,
+    get_dn_moments,
+    get_q,
+    get_v0,
+    get_v0_with_Dn,
+    get_vol,
+)
+
 COLORS = {
     "paper": "#ffffff",
     "ink": "#111827",
@@ -921,3 +933,233 @@ def get_all_graphs(
     )
 
     return outputs
+
+
+
+
+Bi, tree = get_v0(25, return_tree=True)
+
+vol = get_vol(
+    get_AAPL_timeseries("AAPL", dt.date(2020, 1, 1), dt.date(2026, 4, 28))
+)
+
+q = get_q(tree, vol, r=0.01)
+
+mu_Dn, var_Dn = get_dn_moments(tree, q)
+Dn_price = get_v0_with_Dn(mu_Dn, var_Dn)
+
+def plot_weighted_dn_distribution_normal(
+    tree: pl.DataFrame,
+    q: float,
+    mu: float,
+    var: float,
+    n: int,
+    bins: int = 100,
+    show_raw_mean: bool = False,
+    output_dir: str | Path = "graphs",
+    filename: str | Path = "Dn_risk_neutral_normal_approximation.png",
+) -> str:
+    """
+    Plot the risk-neutral terminal distribution of Dn with the normal approximation.
+
+    This is the correct graph for the normal approximation exercise:
+    - terminal Dn values are weighted by risk-neutral path probabilities;
+    - the fitted normal density N(mu, var) is overlaid.
+    """
+    required_cols = {"t", "history", "Dn"}
+    missing = required_cols - set(tree.columns)
+
+    if missing:
+        raise ValueError(f"Missing required columns: {missing}")
+
+    if var <= 0:
+        raise ValueError("Variance must be strictly positive.")
+
+    tree = tree.filter(pl.col("t") <= n)
+
+    if tree.is_empty():
+        raise ValueError(f"No rows found for t <= {n}.")
+
+    final_t = int(tree.select(pl.col("t").max()).item())
+
+    terminal = (
+        tree.filter(pl.col("t") == final_t)
+        .with_columns(
+            pl.col("history").str.count_matches("U").alias("n_up"),
+            pl.col("history").str.count_matches("D").alias("n_down"),
+        )
+        .with_columns(
+            (
+                (pl.lit(q) ** pl.col("n_up"))
+                * (pl.lit(1 - q) ** pl.col("n_down"))
+            ).alias("q_weight")
+        )
+        .select(["Dn", "q_weight"])
+        .drop_nulls()
+    )
+
+    if terminal.is_empty():
+        raise ValueError("No terminal Dn values found.")
+
+    dn = np.asarray(terminal["Dn"].to_list(), dtype=float)
+    weights = np.asarray(terminal["q_weight"].to_list(), dtype=float)
+
+    weight_sum = float(np.sum(weights))
+
+    if not np.isclose(weight_sum, 1.0, atol=1e-8):
+        weights = weights / weight_sum
+
+    sigma = var**0.5
+    raw_mean = float(np.mean(dn))
+
+    x_min = min(float(np.min(dn)), mu - 4 * sigma)
+    x_max = max(float(np.max(dn)), mu + 4 * sigma)
+    x = np.linspace(x_min, x_max, 1_000)
+
+    normal_density = (1 / (sigma * (2 * np.pi) ** 0.5)) * np.exp(
+        -((x - mu) ** 2) / (2 * var)
+    )
+
+    output_path = _prepare_output_path(output_dir, filename)
+
+    fig, ax = _new_figure(figsize=(6.8, 3.9))
+
+    ax.hist(
+        dn,
+        bins=bins,
+        weights=weights,
+        density=True,
+        color=COLORS["blue"],
+        alpha=0.60,
+        edgecolor=COLORS["paper"],
+        linewidth=0.35,
+        label="Risk-neutral binomial distribution",
+    )
+
+    ax.plot(
+        x,
+        normal_density,
+        color=COLORS["purple"],
+        linewidth=1.75,
+        label=fr"Normal approximation $N({mu:.3f}, {var:.3f})$",
+    )
+
+    ax.axvline(
+        mu,
+        color=COLORS["orange"],
+        linewidth=1.35,
+        linestyle=(0, (4, 3)),
+        label=fr"Risk-neutral mean = {_format_value(mu, 3)}",
+    )
+
+    if show_raw_mean:
+        ax.axvline(
+            raw_mean,
+            color=COLORS["muted"],
+            linewidth=1.15,
+            linestyle=(0, (1, 2)),
+            label=fr"Raw path mean = {_format_value(raw_mean, 3)}",
+        )
+
+    _style_axes(
+        ax,
+        title="",
+        xlabel=r"$D_n = S_n - \bar{S}_n$",
+        ylabel="Risk-neutral density",
+    )
+    _style_legend(ax)
+
+    return _save_figure(fig, output_path)
+
+def plot_dn_positive_payoff_density(
+    mu: float,
+    var: float,
+    r_: float = 0.01,
+    output_dir: str | Path = "graphs",
+    filename: str | Path = "Dn_positive_payoff_density.png",
+) -> str:
+    """
+    Plot x^+ times the normal density of Dn.
+
+    The area under this curve equals E[(Dn)^+] under the normal approximation.
+    Discounting this area gives the approximate option price.
+    """
+    if var <= 0:
+        raise ValueError("Variance must be strictly positive.")
+
+    sigma = var**0.5
+    x = np.linspace(mu - 4 * sigma, mu + 4 * sigma, 1_000)
+
+    normal_density = (1 / (sigma * (2 * np.pi) ** 0.5)) * np.exp(
+        -((x - mu) ** 2) / (2 * var)
+    )
+
+    positive_payoff_density = np.maximum(x, 0) * normal_density
+    expected_positive_payoff = np.trapezoid(positive_payoff_density, x)
+    discounted_value = np.exp(-r_ * 0.5) * expected_positive_payoff
+
+    output_path = _prepare_output_path(output_dir, filename)
+
+    fig, ax = _new_figure(figsize=(6.8, 3.9))
+
+    ax.plot(
+        x,
+        positive_payoff_density,
+        color=COLORS["green"],
+        linewidth=1.75,
+        label=fr"$x^+ f_{{D_n}}(x)$",
+    )
+
+    ax.fill_between(
+        x,
+        positive_payoff_density,
+        where=x >= 0,
+        color=COLORS["green"],
+        alpha=0.18,
+    )
+
+    ax.axvline(
+        0,
+        color=COLORS["muted"],
+        linewidth=1.1,
+        linestyle=(0, (4, 3)),
+        label="$D_n = 0$",
+    )
+
+    ax.text(
+        0.98,
+        0.92,
+        fr"$V_0^N \approx {_format_value(discounted_value, 4)}$",
+        transform=ax.transAxes,
+        ha="right",
+        va="top",
+        color=COLORS["ink"],
+    )
+
+    _style_axes(
+        ax,
+        title="",
+        xlabel=r"$D_n = S_n - \bar{S}_n$",
+        ylabel=r"$x^+ f_{D_n}(x)$",
+    )
+    _style_legend(ax)
+
+    return _save_figure(fig, output_path)
+
+# plot_weighted_dn_distribution_normal(
+#     tree=tree,
+#     q=q,
+#     mu=mu_Dn,
+#     var=var_Dn,
+#     n=25,
+#     bins=100,
+#     show_raw_mean=True,
+#     output_dir="graphs/distributions",
+# )
+
+plot_dn_positive_payoff_density(
+    mu=mu_Dn,
+    var=var_Dn,
+    r_=0.01,
+    output_dir="graphs/distributions",
+)
