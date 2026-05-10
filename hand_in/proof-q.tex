@@ -10,37 +10,45 @@
 
 \section{Proving Q}
 
-\noindent In order to compute the risk-neutral probability q, we need to start with the Replicated riskless Payoff H, which has value $V_1 =$ $H_{\text{up}}$ or $H_{\text{down}}$ depending on the states. Then, we want to maximise the expected utility of the replicated portofolio. This will allow us to derive the results and find the risk-neutral probability q, which makes each states indiferent.
+\noindent To derive the risk-neutral probability $q$, we consider an investor who allocates 
+wealth between the stock $S$ and the bond $B$ by choosing a portfolio 
+$H = (\alpha, \beta)$. The portfolio value at $t=1$ is:
 
-\begin{center}
-\begin{equation*}
+\vspace{1em}
+\[
 V_1 = \alpha S_1 + \beta \cdot B_1 =
 \left\{
-\begin{array}{ll}
+\begin{array}{l}
 \alpha \cdot S_0 \cdot u + \beta B_1 = X_{\text{up}} \\[4pt]
 \alpha \cdot S_0 \cdot d + \beta B_1 = X_{\text{down}}
 \end{array}
 \right.
-\end{equation*}
-\end{center}
+\]
 \vspace{1em}
 
-\noindent\textbf{\uline{We want to maximise $E[u(v_1)]$:}}
+\noindent The investor maximises expected utility $\mathbb{E}^P[u(V_1)]$ subject to the budget 
+constraint $\alpha S_0 + \beta B_0 = V_0$. We show that the first-order conditions 
+uniquely pin down a probability measure $q$ (the \textbf{risk-neutral probability}) under which all assets earn the risk-free rate $r$.
 
-\vspace{0.5em}
+\vspace{2.5em}
+
+\noindent \uline{The investor's optimisation problem is thus:}
 
 \[
-\max_{\alpha,\, \beta} \; E\!\left[u\!\left(\alpha S_1 + \beta \cdot B_1\right)\right]
+\max_{\alpha,\, \beta} \; \mathbb{E}^P\left[u\!\left(\alpha S_1 + \beta \cdot B_1\right)\right]
 \quad \text{s.t.} \quad
 \alpha S_0 + \beta B_0 = V_0
 \]
-\vspace{0.2em}
+\vspace{0.1em}
 
-\noindent We maximise the Expected Utility using the Lagrangian Function:
+\noindent {\small where the constraint states that the cost of the portfolio today equals
+initial wealth $V_0$. Since the constraint is an equality, we maximise
+using the Lagrangian:}
+\vspace{0.1em}
 
 \begin{align*}
 \mathcal{L}(\alpha, \beta, \lambda)
-  &= E\!\left[u\!\left(\alpha S_1 + \beta B_1\right)\right]
+  &= \mathbb{E}^P\left[u\!\left(\alpha S_1 + \beta B_1\right)\right]
      - \lambda\!\left(\alpha S_0 + \beta B_0 - V_0\right) \\[6pt]
   &= p \cdot u(X_{\text{up}}) + (1-p) \cdot u(X_{\text{down}})
      - \lambda\!\left(\alpha S_0 + \beta B_0 - V_0\right) \\[6pt]
@@ -49,23 +57,22 @@ V_1 = \alpha S_1 + \beta \cdot B_1 =
      - \lambda\!\left(\alpha S_0 + \beta B_0 - V_0\right)
 \end{align*}
 
-\vspace{1.5em}
+\vspace{1em}
 
+\noindent Taking first-order conditions with respect to $\alpha$ and $\beta$:
 \begin{align*}
 \mathcal{L}_\alpha
   &= p \cdot u'(X_{\text{up}}) \cdot S_0 \cdot u + (1-p) \cdot u'(X_{\text{down}}) \cdot S_0 \cdot d
      - \lambda \cdot S_0 = 0
-  \tag{I} \\[4pt]
-  &= E\!\left[u'(V_1) \cdot S_1\right] = \lambda S_0
+  \\[4pt]
+  &= \mathbb{E}^P\left[u'(V_1) \cdot S_1\right] = \lambda S_0
 \end{align*}
 
+\noindent {\small Isolating $S_0$:}
 \[
 \longrightarrow \quad
-\lambda = \frac{E\!\left[u'(V_1) \cdot S_1\right]}{S_0}
-\]
-
-\[
-S_0 = \frac{1}{\lambda} \cdot E\!\left[u'(V_1) \cdot S_1\right]
+S_0 = \frac{1}{\lambda} \cdot \mathbb{E}^P\left[u'(V_1) \cdot S_1\right]
+\tag{I}
 \]
 
 \vspace{2em}
@@ -74,43 +81,42 @@ S_0 = \frac{1}{\lambda} \cdot E\!\left[u'(V_1) \cdot S_1\right]
 \mathcal{L}_\beta
   &= p \cdot u'(X_{\text{up}}) \cdot B_1 + (1-p) \cdot u'(X_{\text{down}}) \cdot B_1
      - \lambda \cdot B_0 = 0
-  \tag{II} \\[4pt]
-  &= E\!\left[u'(V_1) \cdot B_1\right] = \lambda B_0
-\end{align*}
+  \\[4pt]
+  &= \mathbb{E}^P\left[u'(V_1) \cdot B_1\right] = \lambda B_0
+\end{align*} 
 
+\noindent {\small Isolating $\lambda$:}
 \[
 \longrightarrow \quad
-\lambda = \frac{E\!\left[u'(V_1) \cdot B_1\right]}{B_0}
+\lambda = \frac{\mathbb{E}^P\left[u'(V_1) \cdot B_1\right]}{B_0}
+\tag{II}
 \]
 
-\vspace{2em}
-
-\noindent We assume that $B_0 = 1$ and $B_1 = (1+r)$, we thus have:
+\noindent We normalize the bond price to $B_0 = 1$ (one unit invested today) 
+and $B_1 = (1+r)$ (grows at the risk-free rate):
 
 \[
 \frac{1}{\lambda}
-  = \frac{1}{(1+r) \cdot E\!\left[u'(V_1)\right]}
+  = \frac{1}{(1+r) \cdot \mathbb{E}^P\left[u'(V_1)\right]}
 \]
-\vspace{2em}
+\vspace{0.1em}
 
-
-\noindent$\longrightarrow$ \underline{Substitute II in I:}
+\noindent {\small Substituting this expression for $\frac{1}{\lambda}$ into (I):}
 \begin{align*}
 S_0
-  &= \frac{1}{1+r} \cdot \frac{E\!\left[u'(V_1) \cdot S_1\right]}{E\!\left[u'(V_1)\right]}
+  &= \frac{1}{1+r} \cdot \frac{\mathbb{E}^P\left[u'(V_1) \cdot S_1\right]}{\mathbb{E}^P\left[u'(V_1)\right]}
   \tag{III} \\[4pt]
 \end{align*}
-
-\vspace{1em}
 
 \noindent \textbf{\underline{We define the variable $Z$}}, which represents the marginal utility of $V_1$ divided by the
 expected value of the marginal utility of $V_1$:
 \[
 Z = \frac{u'(V_1)}{E^P\!\left[u'(V_1)\right]}
 \]
-\vspace{0.1em}
+\vspace{0.5em}
 
-\noindent Since $V_1$ can take two values, $Z$ takes also two values:
+\noindent Since $V_1$ takes two values in the binomial model, 
+$Z$ takes two values accordingly:
 \[
 Z_{\text{up}} =
   \frac{u'(X_{\text{up}})}
@@ -123,15 +129,15 @@ Z_{\text{down}} =
 
 \vspace{1.5em}
 
-\noindent\uline{$Z$ has two properties:}
+\noindent\uline{$Z$ satisfies two properties:}
 
 \begin{enumerate}
-  \item Since we assume increasing utility $\bigl(u'(V_1) > 0\bigr)$:
-        \quad $Z > 0$ \quad $\forall\, \mathbb{R}$
+  \item Since utility is increasing, $u'(V_1) > 0$, so $Z > 0$ 
+        in both states.
 
-  \vspace{0.6em}
+  \vspace{0.2em}
 
-  \item The expected value of $Z$ is equal to 1:
+  \item The expected value of $Z$ is equal to 1 by construction:
         \[
           E^P[Z]
           = E^P\!\left[\frac{u'(V_1)}{E^P\!\left[u'(V_1)\right]}\right]
@@ -142,24 +148,29 @@ Z_{\text{down}} =
 
 \vspace{1.5em}
 
-\noindent Therefore, we can rewrite equation III as:
-\begin{align*}
-              & S_0 = \frac{1}{1+r} \cdot E^P\!\left[Z \cdot S_1\right] \\[0.5pt]
-\intertext{\footnotesize Where: \quad $E^P\!\left[Z \cdot S_1\right] = p \cdot Z_{\text{up}} \cdot S_0 \cdot u + (1-p) \cdot Z_{\text{down}} \cdot S_0 \cdot d$}
-\\[-8pt]
-\longrightarrow \quad & S_0 = \frac{1}{1+r} \cdot p \cdot Z_{\text{up}} \cdot S_{0,u} + (1-p) \cdot Z_{\text{down}} \cdot S_{0,d}
-\end{align*}
-
-\vspace{1em}
-
-\noindent By dividing both sides by $S_0$, we get:
+\noindent {\small Using the two properties of $Z$, we can rewrite equation (III) as:}
 \[
-1 + r = p \cdot Z_{\text{up}} \cdot u + (1-p) \cdot Z_{\text{down}} \cdot d
+S_0 = \frac{1}{1+r} \cdot \mathbb{E}^P\!\left[Z \cdot S_1\right]
 \]
 
+\noindent {\small Expanding $\mathbb{E}^P[Z \cdot S_1]$ explicitly in the 
+binomial model, where $S_1 = S_0 u$ in the up state and $S_1 = S_0 d$ 
+in the down state:}
+\begin{align*}
+ & \mathbb{E}^P\!\left[Z \cdot S_1\right] 
+  = p \cdot Z_{\text{up}} \cdot S_0 \cdot u + (1-p) \cdot Z_{\text{down}} \cdot S_0 \cdot d \\[0.5pt]
+\\[-8pt]
+\longrightarrow \quad & S_0 = \frac{1}{1+r} \cdot \left( p \cdot Z_{\text{up}} \cdot S_0 \cdot u + (1-p) \cdot Z_{\text{down}} \cdot S_0 \cdot d \right)
+\end{align*}
 \vspace{1em}
 
-\noindent We define $q$ and $(1-q)$ as:
+\noindent {\small By dividing both sides by $S_0$, we get:}
+\[
+1 + r = p \cdot Z_{\text{up}} \cdot u + (1-p) \cdot Z_{\text{down}} \cdot d
+\tag{IV}
+\]
+
+\noindent We define $q$ and $(1-q)$ as the real-world probability reweighted by how much the investor values a dollar in that state, which makes the investor indifferent between the stock and the risk-free bond:
 \[
 q = p \cdot Z_{\text{up}}
   = p \cdot \frac{u'(X_{\text{up}})}{E\!\left[u'(V_1)\right]}
@@ -168,21 +179,28 @@ q = p \cdot Z_{\text{up}}
        = (1-p) \cdot \frac{u'(X_{\text{down}})}{E\!\left[u'(V_1)\right]}
 \]
 
-\vspace{0.1em}
-
-
-
 \vspace{1em}
 
-We thus have: 
+\noindent This is valid probability measure because both terms 
+are strictly positive (since $Z > 0$, $p \in (0,1)$), and they sum to 1:
+\[
+q + (1-q) 
+  = p \cdot Z_{\text{up}} + (1-p) \cdot Z_{\text{down}} 
+  = \mathbb{E}^P[Z] = 1 \quad 
+\]
+\vspace{0.1em}
+
+\noindent {\small Substituting into equation (IV) and solving for $q$:}
 \begin{align*}
-\longrightarrow \quad & 1 + r = q \cdot u + (1-q) \cdot d \\[6pt]
-                      & 1 + r = q(u - d) + d
+1 + r &= q \cdot u + (1-q) \cdot d \\[4pt]
+1 + r &= q(u - d) + d
 \end{align*}
 
 \[
-\boxed{ q = \frac{(1+r) - d}{u - d} }
+\boxed{q = \frac{(1+r) - d}{u - d}}
 \]
 
-\noindent -> still adding text
+\noindent This is the \textbf{risk-neutral probability}: the unique 
+value of $q$ consistent with no-arbitrage, independent of any investor's 
+preferences. 
 \end{document}
