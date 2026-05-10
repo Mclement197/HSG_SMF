@@ -1,64 +1,78 @@
 from math import e, exp, pi, sqrt
+import datetime as dt
 
-from helpers import get_AAPL_timeseries, get_log_returns, get_vol
+from helpers import get_AAPL_timeseries, get_vol
 import matplotlib.pyplot as plt
 import numpy as np
-import polars as pl
 
 
-def get_p():
-    aapl = get_AAPL_timeseries()
-    log_returns = get_log_returns(aapl)
-    returns = log_returns.select(pl.col("log_returns")).to_series().to_list()
-    hausses = sum(1 for r in returns if r > 0)
-    return hausses / len(returns)
+n = 25
+aapl = get_AAPL_timeseries(start=dt.date(2020, 1, 1), end=dt.date(2026, 4, 28))
+vol = get_vol(aapl)
 
+delta_t = 0.5 / n
+u = e ** (vol * delta_t**0.5)
+d = e ** (-vol * delta_t**0.5)
+q = (e ** (0.01 * delta_t) - d) / (u - d)
 
-def get_q(n):
-    delta_t = 0.5 / n
-    r = 0.01
-    vol = get_vol(get_AAPL_timeseries())
-    u = e ** (vol * (delta_t**0.5))
-    d = e ** (-vol * (delta_t**0.5))
-    return (e ** (r * delta_t) - d) / (u - d)
+mu_q = n * q
+sigma_q = sqrt(n * q * (1 - q))
+skew_q = (1 - 2 * q) / sqrt(n * q * (1 - q))
+kurt_q = (1 - 6 * q * (1 - q)) / (n * q * (1 - q))
+
+print(f"vol      = {vol:.4f}")
+print(f"q        = {q:.4f}")
+print(f"Mean     = {mu_q:.2f}")
+print(f"Sigma    = {sigma_q:.2f}")
+print(f"Skewness = {skew_q:.4f}")
+print(f"Kurtosis = {kurt_q:.4f}")
 
 
 def normal_pdf(x, mu, sigma):
     return (1 / sqrt(2 * pi * sigma**2)) * exp(-((x - mu) ** 2) / (2 * sigma**2))
 
 
-n = 25
-p = get_p()
-q = get_q(n)
-
-mu_p = n * p
-sigma_p = sqrt(n * p * (1 - p))
-mu_q = n * q
-sigma_q = sqrt(n * q * (1 - q))
-
-print(f"p  = {p:.4f}  →  mean = {mu_p:.2f}, sigma = {sigma_p:.2f}")
-print(f"q  = {q:.4f}  →  mean = {mu_q:.2f}, sigma = {sigma_q:.2f}")
-
 x_cont = np.linspace(0, n, 500)
-pdf_p = [normal_pdf(x, mu_p, sigma_p) for x in x_cont]
 pdf_q = [normal_pdf(x, mu_q, sigma_q) for x in x_cont]
 
-plt.style.use("dark_background")
-fig, ax = plt.subplots(figsize=(14, 6))
+plt.rcParams.update({
+    "font.family": "serif",
+    "axes.spines.top": False,
+    "axes.spines.right": False,
+})
 
-ax.plot(x_cont, pdf_p, color="#ff6b6b", lw=2, label=f"p = {p:.3f}")
-ax.fill_between(x_cont, pdf_p, alpha=0.15, color="#ff6b6b")
-ax.plot(x_cont, pdf_q, color="#4a9eff", lw=2, label=f"q = {q:.3f}")
-ax.fill_between(x_cont, pdf_q, alpha=0.15, color="#4a9eff")
+fig, ax = plt.subplots(figsize=(10, 5))
+fig.patch.set_facecolor("white")
+ax.set_facecolor("white")
 
-ax.axvline(mu_p, color="#ff6b6b", linestyle="--", lw=1, label=f"Mean p = {mu_p:.2f}")
-ax.axvline(mu_q, color="#4a9eff", linestyle="--", lw=1, label=f"Mean q = {mu_q:.2f}")
+COLOR_Q = "#2980B9"
 
-ax.set_title("Distribution of p vs q (n=25)", fontweight="bold")
-ax.set_xlabel("Number of up moves")
-ax.set_ylabel("Probability density")
-ax.legend()
+ax.plot(x_cont, pdf_q, color=COLOR_Q, lw=2, label=f"Risk-neutral probability  $q = {q:.3f}$")
+ax.fill_between(x_cont, pdf_q, alpha=0.12, color=COLOR_Q)
+ax.axvline(mu_q, color=COLOR_Q, linestyle="--", lw=1, alpha=0.7, label=f"Mean $= {mu_q:.2f}$")
+
+stats_text = (
+    f"Skewness $= {skew_q:.3f}$\n"
+    f"Excess kurtosis $= {kurt_q:.3f}$"
+)
+ax.text(
+    0.97, 0.95, stats_text,
+    transform=ax.transAxes,
+    fontsize=9,
+    verticalalignment="top",
+    horizontalalignment="right",
+    bbox=dict(boxstyle="round,pad=0.4", facecolor="#EBF5FB", edgecolor="#2980B9", alpha=0.8),
+    color="#1a1a1a",
+)
+
+ax.set_title(
+    "Risk-Neutral Distribution of Up Moves  ($n = 25$ steps, AAPL)",
+    fontsize=12, pad=12,
+)
+ax.set_xlabel("Number of up moves", fontsize=10)
+ax.set_ylabel("Probability density", fontsize=10)
+ax.legend(frameon=False, fontsize=9)
 
 plt.tight_layout()
-plt.savefig("distribution_pq.png", dpi=150)
+plt.savefig("distribution_q.png", dpi=200, bbox_inches="tight", facecolor="white")
 plt.show()

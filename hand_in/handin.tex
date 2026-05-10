@@ -124,13 +124,12 @@ compute the arithmetic average $\bar{S}_n = C_n/(n+1)$.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[height=0.5\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_moves.png}
+  \includegraphics[height=0.6\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_moves.pdf}
   \caption{Binomial tree with 3 periods. Each node contains the stock price at that point in time.}
   \label{fig:tree}
 \end{figure}
 
 \begin{itemize}
-  
   \item explain u and d (Mathis)
   \item explain how we compute the stock price at each node (Mathis)
   \item link number of nodes to numbre of periods 1+t (Juliette) DONE 
@@ -150,8 +149,8 @@ they converge to only 26 distinct prices at maturity.
 \label{sec:average}
 
 \begin{itemize}
-  \item add formula for average (Mathis)
-  \item add tree with average (Mathis)
+  \item add formula for average (Mathis) DONE
+  \item add tree with average (Mathis) DONE
   \item Explain how we got these results (Juliette) DONE 
 \end{itemize}
 
@@ -162,7 +161,7 @@ they converge to only 26 distinct prices at maturity.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[height=0.5\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_avg_moves.png}
+  \includegraphics[height=0.6\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_avg_moves.pdf}
   \caption{Binomial tree with 3 periods. Each node contains the stock price and the average at that point in time.}
   \label{fig:tree_avg}
 \end{figure}
@@ -174,11 +173,43 @@ $S_0$ to $S_{25}$. We then divide by $n+1 = 26$ to obtain the average
 $\bar{S}_n = C_{25}/26$.
 
 \begin{itemize}
-  \item add distributions (2x2 graph): C (distribution + Paths), S-bar (distribution), S (distribution) (Mathis) 
+  \item add distributions (2x2 graph): C (distribution + Paths), S-bar (distribution), S (distribution) (Mathis) DONE
   \item Graphs descriptions (Andrea)
   \item calcualte skewness and kurtosis of these distributions (Erwan)
 \end{itemize}
 
+\begin{figure}[H]
+    \centering
+
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{graphs/distributions/C_terminal_distribution_25n.pdf}
+        \caption*{Distributions of Sum of Spots at Terminal Nodes}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{graphs/paths/C_paths_12n.pdf}
+        \caption*{Paths of Sum of Spots}
+    \end{minipage}
+
+    \vspace{0.4cm}
+
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{graphs/distributions/S_bar_terminal_distribution_25n.pdf}
+        \caption*{Distributions of Arithmetic Average at Terminal Nodes}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{graphs/distributions/S_terminal_distribution_25n.pdf}
+        \caption*{Distributions of Stock Prices at Terminal Nodes}
+    \end{minipage}
+
+    \caption{Four figures arranged in a 2x2 layout.}
+    \label{fig:four_images}
+\end{figure}
 
 
 
@@ -197,13 +228,13 @@ previous step. The option payoff is then $A_T = \max(S_{25} -
 has value. Otherwise, the option expires worthless and the payoff
 is zero.o
 \begin{itemize}
-  \item Tree picture (With the payoff at the terminal nodes) (Mathis)
+  \item Tree picture (With the payoff at the terminal nodes) (Mathis) DONE
   \item Stats (done by Juliette)
 \end{itemize}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[height=0.5\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_avg_payoff.png}
+  \includegraphics[height=0.6\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_avg_payoff.pdf}
   \caption{Extract of the first 3 nodes from the Binomial tree with 25 nodes. Here note that the payoff is only computed at the terminal nodes (t=25) and not at the intermediate nodes, the values are only for illustration and were not used for computing.}
   \label{fig:tree_payoff}
 \end{figure}
@@ -238,10 +269,25 @@ paths expire worthless while a small number of highly favourable paths drive the
 The maximum payoff of 321.58 corresponds to the path where the stock price increases at every 
 period.
 \begin{itemize}
-  \item Payoff distribution (Terminal Nodes) (Mathis)
+  \item Payoff distribution (Terminal Nodes) (Mathis) DONE
   \item Description and interpretation of the payoff distribution (Andrea)
 \end{itemize}
 
+\begin{figure}[H]
+  \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{graphs/distributions/V_terminal_distribution_25n.pdf}
+        \caption*{Distribution of Payoff at terminal Nodes}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{graphs/distributions/V_terminal_distribution_25n_excl_zero.pdf}
+        \caption*{Excluding Payoff = 0}
+    \end{minipage}
+    \label{fig:four_images}
+\end{figure}
 
 
 
@@ -254,32 +300,53 @@ period.
   \item intro why we need q (Erwan)
   \item proof of q (Erwan)
   \item explain relation with vol and interest rate (Erwan)
-  \item Matrix vol interest rate (Mathis)
+  \item Matrix vol interest rate (Mathis) DONE
   \item Interpretation of q matrix (Erwan)
   \item show result of q (Erwan)
   \item Distribution of the payoff under q vs p (Juliette)
 \end{itemize}
-Figure~\ref{fig:distribution_q} displays the risk-neutral distribution 
-of up moves over $n = 25$ steps, approximated by a normal distribution 
-with mean $\mu_q = nq$ and variance $\sigma_q^2 = nq(1-q)$.
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\textwidth]{graphs/distribution_q.png}
-    \caption{Risk-Neutral Distribution of Up Moves ($n = 25$ steps, AAPL)}
-    \label{fig:distribution_q}
-\end{figure}
-$q \approx 0.491$ is the risk-neutral probability derived from the 
-no-arbitrage condition, depending on $r$ and $\sigma$ rather than 
-historical returns. Unlike the physical probability $p$, which describes 
-the actual likelihood of an up-move, $q$ assigns relatively more weight 
-to adverse states, reflecting investor risk aversion. The fact that 
-$q < p$ is therefore expected.
+Both $p$ and $q$ represent the probability of an up-move, but they
+differ in nature. $p = 0.5$ is the physical probability assumed by
+the model, meaning Apple has equal chances of going up or down.
+$q \approx 0.491$ is the risk-neutral probability, derived from the
+no-arbitrage condition. It does not depend on $p$, but on $r$
+and $\sigma$.
 
-Comparing skewness and kurtosis between the two is not straightforward, 
-as differences in these moments capture not only beliefs about tail risks 
-but also their pricing. With a skewness of $0.007$ and excess kurtosis 
-of $-0.080$, the distribution of $q$ is nearly symmetric and close to normal.
+The two distributions are very similar because $r = 1\%$ is small.
+If $r$ were higher, $q$ would be further from $0.5$ and the two
+distributions would differ more. The fact that $q < p$ means that
+under the risk-neutral measure, the stock has slightly less chance
+of going up than in the real world.
 
+\begin{table}[H]
+  \centering
+  \small
+  \resizebox{\textwidth}{!}{
+  \begin{tabular}{lcccccc}
+    \hline
+      \textbf{Interest rate / Volatility} 
+      & \textbf{0.20} 
+      & \textbf{0.25} 
+      & \textbf{0.30} 
+      & \textbf{0.3130 actual} 
+      & \textbf{0.35} 
+      & \textbf{0.40} \\
+    \hline
+      0.0000 & 0.492929 & 0.491162 & 0.489395 & 0.488934 & 0.487628 & 0.485862 \\
+      0.0025 & 0.493813 & 0.491869 & 0.489984 & 0.489499 & 0.488133 & 0.486303 \\
+      0.0050 & 0.494697 & 0.492576 & 0.490573 & 0.490064 & 0.488638 & 0.486745 \\
+      0.0075 & 0.495581 & 0.493283 & 0.491162 & 0.490628 & 0.489143 & 0.487187 \\
+      0.0100 & 0.496465 & 0.493990 & 0.491752 & 0.491193 & 0.489648 & 0.487629 \\
+      0.0125 & 0.497349 & 0.494697 & 0.492341 & 0.491758 & 0.490153 & 0.488070 \\
+      0.0150 & 0.498233 & 0.495404 & 0.492930 & 0.492322 & 0.490658 & 0.488512 \\
+      0.0175 & 0.499117 & 0.496112 & 0.493519 & 0.492887 & 0.491163 & 0.488954 \\
+      0.0200 & 0.500001 & 0.496819 & 0.494109 & 0.493452 & 0.491668 & 0.489396 \\
+    \hline
+  \end{tabular}
+  }
+  \caption{Sensitivity table of q for different interest rates and volatilities.}
+  \label{tab:sensitivity_rates_volatility}
+\end{table}
 
 
 
@@ -290,15 +357,44 @@ of $-0.080$, the distribution of $q$ is nearly symmetric and close to normal.
 
 \begin{itemize}
   \item explain backward induction depends on q and how we get the result (Mathis)
-  \item graph of the tree with values (Mathis)
+  \item graph of the tree with values (Mathis) DONE
   \item Presentation of our result (Juliette) DONE
 \end{itemize}
+
+
+To perform backward induction, we priced the option by first computing its terminal payoff (or the value of the option at maturity) for each terminal node,
+\[
+V_T=(S_T-\bar S_T)^+,
+\qquad 
+\bar S_T=\frac{1}{T+1}\sum_{t=0}^{T}S_t .
+\]
+Then, we moved backwards through the binomial tree. At each node, the option value is the discounted risk-neutral expected value of the two next possible values:
+\[
+V_t=e^{-r\Delta t}\left(qV_{t+1}^{u}+(1-q)V_{t+1}^{d}\right).
+\]
+The martingale measure $q$ found above
+\[
+q=\frac{e^{r\Delta t}-d}{u-d} \approx 0.491
+\]
+is not the real probability of an up move. 
+It is the risk-neutral probability chosen 
+so that the expected stock return equals the risk-free return. Therefore, 
+the final price \(V_0\) is obtained by recursively applying this formula 
+from maturity back to the initial node. Essentially we are computing the expected value of the option at each node until we reach $t=0$.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[height=0.6\textwidth]{graphs/backward_induction/backward_induction_tree_3n.pdf}
+  \caption{Backward induction tree with 3 periods. Each node contains the stock price, the average, and the option value at that point in time.}
+  \label{fig:backward_induction_tree}
+\end{figure}
+
 The arbitrage-free price of the Asian call option at $t=0$ is obtained
 by applying backward induction over the entire binomial tree using the
 risk-neutral probability $q$:
 
 \[
-  \boxed{V_0 \approx 14.05}
+  \boxed{V_0 \approx 14.05115}
 \]
 
 \vspace{0.3cm}
@@ -330,6 +426,35 @@ leading to a lower expected payoff.
   \item Comapre the different scenarios (Andrea)
 \end{itemize}
 
+\begin{table}[H]
+  \centering
+  \small
+  \resizebox{\textwidth}{!}{
+  \begin{tabular}{lcccccc}
+    \hline
+      \textbf{Interest rate / Volatility} 
+      & \textbf{0.20} 
+      & \textbf{0.25} 
+      & \textbf{0.30} 
+      & \textbf{0.3130 actual} 
+      & \textbf{0.35} 
+      & \textbf{0.40} \\
+    \hline
+      0.0000 & 8.780882 & 10.972976 & 13.163081 & 13.733389 & 15.350602 & 17.535324 \\
+      0.0025 & 8.862073 & 11.053213 & 13.242319 & 13.812448 & 15.428977 & 17.612780 \\
+      0.0050 & 8.943701 & 11.133786 & 13.321888 & 13.891761 & 15.507573 & 17.690423 \\
+      0.0075 & 9.025763 & 11.214693 & 13.401726 & 13.971328 & 15.586390 & 17.768251 \\
+      0.0100 & 9.108259 & 11.295934 & 13.481831 & 14.051150 & 15.665427 & 17.846264 \\
+      0.0125 & 9.191190 & 11.377509 & 13.562203 & 14.131225 & 15.744685 & 17.924462 \\
+      0.0150 & 9.274552 & 11.459418 & 13.642843 & 14.211554 & 15.824163 & 18.002845 \\
+      0.0175 & 9.358347 & 11.541659 & 13.723749 & 14.292135 & 15.903860 & 18.081412 \\
+      0.0200 & 9.442573 & 11.624233 & 13.804922 & 14.372969 & 15.983776 & 18.160163 \\
+    \hline
+  \end{tabular}
+  }
+  \caption{Sensitivity table of option values for different interest rates and volatilities.}
+  \label{tab:sensitivity_option_values_rates_volatility}
+\end{table}
 
 
 
@@ -340,15 +465,103 @@ leading to a lower expected payoff.
 \label{sec:normal}
 
 \begin{itemize}
-  \item Values distribution (Mathis)
-  \item Kurtosis and skewness of the distribution (Erwan)
+  \item Values distribution (Mathis) DONE
 \end{itemize}
 
+To approximate the price of the floating-strike Asian call, we approximate
+the distribution of
 
+\[
+D_n = S_n - \bar S_n
+\]
+by a normal distribution,
 
+\[
+D_n \approx N(\mu_D,\sigma_D^2).
+\]
+Since
 
+\[
+D_n = \sum_{t=0}^n a_t S_t,
+\]
+with
 
+\[
+a_t =
+\begin{cases}
+-\frac{1}{n+1}, & t=0,\dots,n-1,\\
+\frac{n}{n+1}, & t=n,
+\end{cases}
+\]
+we compute
 
+\[
+\mu_D = \sum_{t=0}^n a_t \mathbb E_Q[S_t] \approx 0.6790
+\]
+and
+
+\[
+\sigma_D^2 =
+\sum_{s=0}^n\sum_{t=0}^n
+a_s a_t \operatorname{Cov}_Q(S_s,S_t) \approx 1229.94.
+\]
+Using the normal approximation, the option price is
+
+\[
+V_0^{N}
+=
+e^{-rT}
+\left[
+\sigma_D \varphi\left(\frac{\mu_D}{\sigma_D}\right)
++
+\mu_D \Phi\left(\frac{\mu_D}{\sigma_D}\right)
+\right] \approx 14.2649.
+\]
+
+This price is then compared to the backward-induction price. The approximation is useful
+because it is computationally faster, but it is not exact because \(D_n\) is not normally
+distributed; it is a function of path-dependent stock prices.
+
+\begin{figure}[H]
+  \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{graphs/distributions/Dn_risk_neutral_normal_approximation.pdf}
+        \caption*{Distribution of \(D_n\) under the risk-neutral measure (blue) and its normal approximation (orange).}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{graphs/distributions/Dn_positive_payoff_density.pdf}
+        \caption*{Density of \(D_n\) for paths with positive payoff (blue) and its normal approximation (orange).}
+    \end{minipage}
+    \label{fig:four_images}
+\end{figure}
+The first figure shows the risk-neutral terminal distribution of
+\[
+D_n = S_n - \bar S_n
+\]
+together with the fitted normal approximation
+
+\[
+D_n \sim_Q N(\mu_D,\sigma_D^2).
+\]
+The histogram is computed using risk-neutral path weights. The normal approximation captures the main mass of the distribution, although the empirical binomial distribution remains slightly skewed.
+The second figure plots
+
+\[
+x^+ f_{D_n}(x),
+\]
+whose area corresponds to
+
+\[
+\mathbb E_Q[(D_n)^+].
+\]
+After discounting this expectation by \(e^{-rT}\), we obtain the normal approximation price \(V_0^N\).
+
+This is giving us a different in price \(V^{N}_0 - V^{Bi}_0 \approx 0.21\), 
+which means that the approximation with normal distribution is good. 
+This means a relative difference \(\frac{V^{N}_0 - V^{Bi}_0}{V^{Bi}_0} \approx 0.015\) or 1.5\%.
 
 
 
