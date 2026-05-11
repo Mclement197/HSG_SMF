@@ -667,6 +667,184 @@ def plot_backward_induction_tree(
     return _render_graphviz(dot, filename, output_dir)
 
 
+def plot_backward_induction_first_steps_tree(
+    df: pl.DataFrame,
+    steps: int = 3,
+    full_n: int | None = None,
+    output_dir: str | Path = "graphs",
+    filename: str | None = None,
+) -> str:
+    """Plot the first steps of a full backward-induction tree."""
+    required_cols = {"t", "path_id", "S", "S_bar", "V", "move", "parent_id"}
+    missing = required_cols - set(df.columns)
+
+    if missing:
+        raise ValueError(f"Missing required columns: {missing}")
+
+    full_n = int(df.select(pl.col("t").max()).item()) if full_n is None else full_n
+    plot_df = df.filter(pl.col("t") <= steps)
+
+    if plot_df.is_empty():
+        raise ValueError(f"No rows found for t <= {steps}.")
+
+    if filename is None:
+        filename = f"backward_induction_tree_{full_n}n_first_{steps}_steps"
+
+    rows = plot_df.sort(["t", "path_id"]).to_dicts()
+    dot = _tree_graph()
+
+    for row in rows:
+        node_id = str(row["path_id"])
+        label = "\n".join(
+            [
+                f"t={row['t']}",
+                f"S={_format_value(row['S'])}",
+                f"Avg={_format_value(row['S_bar'])}",
+                f"V={_format_value(row['V'])}",
+            ]
+        )
+
+        if row["t"] == 0:
+            fillcolor = COLORS["blue_soft"]
+            bordercolor = COLORS["blue"]
+        else:
+            fillcolor = COLORS["paper"]
+            bordercolor = COLORS["grid"]
+
+        dot.node(
+            node_id,
+            label=label,
+            fillcolor=fillcolor,
+            fontcolor=COLORS["ink"],
+            color=bordercolor,
+        )
+
+        if row["parent_id"] is not None:
+            edge_color = COLORS["green"] if row["move"] == "U" else COLORS["orange"]
+            dot.edge(node_id, str(row["parent_id"]), color=edge_color)
+
+    return _render_graphviz(dot, filename, output_dir)
+
+
+def plot_backward_induction_last_steps_tree(
+    aapl: pl.DataFrame,
+    vol: float,
+    n: int = 25,
+    steps: int = 3,
+    output_dir: str | Path = "graphs",
+    filename: str | None = None,
+    prefix_history: str | None = None,
+    r: float = 0.01,
+) -> str:
+    """Plot one local final subtree from an n-step backward-induction tree."""
+    if steps >= n:
+        raise ValueError("steps must be smaller than n.")
+
+    from helpers import T, get_q
+
+    delta_t = T / n
+    u = np.exp(vol * delta_t**0.5)
+    d = np.exp(-vol * delta_t**0.5)
+    discount = np.exp(-r * delta_t)
+    q = get_q(pl.DataFrame({"t": [0, n]}), vol, r)
+    start_t = n - steps
+
+    if prefix_history is None:
+        prefix_history = "UD" * (start_t // 2) + "U" * (start_t % 2)
+
+    if len(prefix_history) != start_t or any(move not in "UD" for move in prefix_history):
+        raise ValueError(f"prefix_history must contain exactly {start_t} U/D moves.")
+
+    s0 = (
+        aapl.filter(pl.col("Date") == aapl.select(pl.col("Date").max()).item())
+        .select(pl.col("Close"))
+        .item()
+    )
+
+    def values_for(history: str) -> tuple[float, float, float]:
+        s = float(s0)
+        c = float(s0)
+
+        for move in history:
+            s *= u if move == "U" else d
+            c += s
+
+        s_bar = c / (len(history) + 1)
+        return s, c, s_bar
+
+    nodes: dict[str, dict[str, float | int | str | None]] = {}
+
+    for depth in range(steps + 1):
+        histories = [prefix_history]
+
+        for _ in range(depth):
+            histories = [history + move for history in histories for move in ("U", "D")]
+
+        for history in histories:
+            s, _, s_bar = values_for(history)
+            nodes[history] = {
+                "t": len(history),
+                "history": history,
+                "move": history[-1] if history else "",
+                "parent": history[:-1] if history != prefix_history else None,
+                "S": s,
+                "S_bar": s_bar,
+                "V": max(s - s_bar, 0) if len(history) == n else None,
+            }
+
+    for t in range(n - 1, start_t - 1, -1):
+        for history, node in list(nodes.items()):
+            if node["t"] != t:
+                continue
+
+            up_value = nodes[history + "U"]["V"]
+            down_value = nodes[history + "D"]["V"]
+            node["V"] = discount * (q * float(up_value) + (1 - q) * float(down_value))
+
+    if filename is None:
+        filename = f"backward_induction_tree_{n}n_last_{steps}_steps"
+
+    dot = _tree_graph()
+
+    for history, row in sorted(nodes.items(), key=lambda item: (item[1]["t"], item[0])):
+        label = "\n".join(
+            [
+                f"t={row['t']}",
+                f"S={_format_value(row['S'])}",
+                f"Avg={_format_value(row['S_bar'])}",
+                f"V={_format_value(row['V'])}",
+            ]
+        )
+
+        if row["t"] == start_t:
+            fillcolor = COLORS["blue_soft"]
+            bordercolor = COLORS["blue"]
+        elif row["t"] == n:
+            if row["V"] is not None and row["V"] > 0:
+                fillcolor = COLORS["green_soft"]
+                bordercolor = COLORS["green"]
+            else:
+                fillcolor = COLORS["orange_soft"]
+                bordercolor = COLORS["orange"]
+        else:
+            fillcolor = COLORS["paper"]
+            bordercolor = COLORS["grid"]
+
+        dot.node(
+            history,
+            label=label,
+            fillcolor=fillcolor,
+            fontcolor=COLORS["ink"],
+            color=bordercolor,
+        )
+
+        if row["parent"] is not None:
+            edge_color = COLORS["green"] if row["move"] == "U" else COLORS["orange"]
+            dot.edge(history, str(row["parent"]), color=edge_color)
+
+    return _render_graphviz(dot, filename, output_dir)
+
+
 def plot_aapl_timeseries(
     df: pl.DataFrame,
     date_col: str = "Date",
@@ -934,20 +1112,6 @@ def get_all_graphs(
 
     return outputs
 
-
-
-
-Bi, tree = get_v0(25, return_tree=True)
-
-vol = get_vol(
-    get_AAPL_timeseries("AAPL", dt.date(2020, 1, 1), dt.date(2026, 4, 28))
-)
-
-q = get_q(tree, vol, r=0.01)
-
-mu_Dn, var_Dn = get_dn_moments(tree, q)
-Dn_price = get_v0_with_Dn(mu_Dn, var_Dn)
-
 def plot_weighted_dn_distribution_normal(
     tree: pl.DataFrame,
     q: float,
@@ -1146,20 +1310,21 @@ def plot_dn_positive_payoff_density(
 
     return _save_figure(fig, output_path)
 
-# plot_weighted_dn_distribution_normal(
-#     tree=tree,
-#     q=q,
-#     mu=mu_Dn,
-#     var=var_Dn,
-#     n=25,
-#     bins=100,
-#     show_raw_mean=True,
-#     output_dir="graphs/distributions",
-# )
+if __name__ == "__main__":
+    Bi, tree = get_v0(25, return_tree=True)
 
-plot_dn_positive_payoff_density(
-    mu=mu_Dn,
-    var=var_Dn,
-    r_=0.01,
-    output_dir="graphs/distributions",
-)
+    vol = get_vol(
+        get_AAPL_timeseries("AAPL", dt.date(2020, 1, 1), dt.date(2026, 4, 28))
+    )
+
+    q = get_q(tree, vol, r=0.01)
+
+    mu_Dn, var_Dn = get_dn_moments(tree, q)
+    Dn_price = get_v0_with_Dn(mu_Dn, var_Dn)
+
+    plot_dn_positive_payoff_density(
+        mu=mu_Dn,
+        var=var_Dn,
+        r_=0.01,
+        output_dir="graphs/distributions",
+    )

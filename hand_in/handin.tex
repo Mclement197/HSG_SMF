@@ -11,7 +11,7 @@
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{hyperref}
-\usepackage{xcolor}
+\usepackage[table]{xcolor}
 \usepackage{fancyhdr}
 \usepackage{enumitem}
 \usepackage{float}
@@ -20,7 +20,7 @@
 \usepackage{subcaption}
 \usepackage{listings}
 \usepackage{lmodern}
-\usepackage{graphicx}
+
 
 % Page geometry
 \geometry{top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm}
@@ -100,15 +100,22 @@ its terminal value. This averaging feature reduces sensitivity to short-term pri
 variation, making Asian options particularly prevalent in equity and
 commodity markets. This paper focuses on a European floating-strike Asian call option
 written on Apple Inc. (AAPL), in which the strike is determined by the
-realized arithmetic average of the underlying over the option&#39;s life.
+realized arithmetic average of the underlying over the option's life.
 We price this derivative using a multi-period binomial tree with $n = 25$ periods,
-$T = 6$ months, and parameters calibrated on daily AAPL returns from 2020 to 2026
+$T = 0.5$ or 6 months, and parameters calibrated on daily AAPL returns from 2020 to 2026
 ($S_0 = \$270.71$, $\sigma = 31.31\%$). Path-dependence is handled by augmenting
 the state space with the cumulative sum $C_t = \sum_{j=0}^{t} S_j$, enabling
 backward induction under the risk-neutral measure. Results are validated through a
 normal approximation and a robustness analysis over the key model parameters.
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{graphs/aapl_timeseries.pdf}
+  \caption{Historical daily closing price of Apple Inc. (AAPL) from January 2020 to April 2026.}
+  \label{fig:aapl_price}
+\end{figure}
 
+\newpage
 
 \section{Building the Binomial Tree}
 \label{sec:tree}
@@ -121,24 +128,44 @@ $p = 0.5$. Both factors are calibrated using the volatility $\sigma$
 estimated from Apple's daily log-returns over 2020--2026, using a 
 historical method.
 
+The size of the up and down moves is determined by the annualized volatility 
+\(\sigma\) and by the length of one time step \(\Delta t = T/n\). 
+Using the Cox-Ross-Rubinstein parametrization, the up and down factors are
+\begin{equation}
+  u = e^{\sigma \sqrt{\Delta t}} \approx 1.045,
+  \qquad
+  d = e^{-\sigma \sqrt{\Delta t}} \approx 0.9567.
+  \label{eq:up and down}
+\end{equation}
+
+
+
+This choice is consistent with the idea that stock prices are modeled through 
+log-returns. Indeed, one up move corresponds to a log-return of 
+\(\log(u)=\sigma\sqrt{\Delta t}\), while one down move corresponds to 
+\(\log(d)=-\sigma\sqrt{\Delta t}\). Therefore, the volatility of the one-period 
+log-return scales with \(\sqrt{\Delta t}\), as in a geometric Brownian motion.
+Hence, the binomial tree can be interpreted as a discrete-time approximation of 
+the continuous-time Black-Scholes model, where the stock price follows a geometric 
+Brownian motion.
+
+
 Starting from $S_0$, each node splits into two branches: an up-branch 
-($S \times u$) and a down-branch ($S \times d$). After 25 periods, the 
+($S^u = S \times u$) and a down-branch ($S^d = S \times d$). After 25 periods, the 
 tree contains 26 nodes and $2^{25} \approx 33$ million possible paths. 
-At each node, we store the cumulative sum $C_t = \sum_{j=0}^{t} S_j$, 
-needed to compute the arithmetic average $\bar{S}_n = C_n/(n+1)$, as 
-shown in Figure~\ref{fig:tree}.
+The first three steps of the tree are illustrated in Figure~\ref{fig:tree}.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[height=0.6\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_moves.pdf}
+  \includegraphics[width=\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_moves.pdf}
   \caption{Binomial tree with 3 periods. Each node contains the stock price at that point in time.}
   \label{fig:tree}
 \end{figure}
 
-\begin{itemize}
-  \item explain u and d (Mathis)
-  \item explain how we compute the stock price at each node (Mathis)
-\end{itemize}
+In order to compute the prices at different time in the tree in Figure~\ref{fig:tree},
+we need to multiply the price at the privious node by $u$ (up move) or $d$ (down move).
+The tree then extends upwards after an up move and downwards after a down move.
+
 At each period $t$, a recombining tree has $t+1$ distinct price nodes. 
 At $t=25$, this gives 26 distinct prices. However, since the Asian 
 option payoff depends on the arithmetic average $\bar{S}_n$, known 
@@ -149,31 +176,34 @@ prices at maturity. To differentiate between paths, we store the
 cumulative sum $C_t$ at each node, which allows us to compute a distinct 
 average $\bar{S}_n$ for each path.
 
-
+\newpage
 
 
 
 \section{Arithmetic Average at Terminal Nodes}
 \label{sec:average}
 
-
+To compute the arithmetic average at each terminal node, we use the
+cumulative sum $C_t$ stored at each node throughout the tree, as seen in Figure~\ref{fig:tree_avg}. 
+In order to compute the average at maturity, we apply the classical arithmetic average formula:
 \begin{equation}
-  \bar{S}_n = \frac{1}{n+1} \sum_{j=0}^{n} S_j
+  \bar{S}_n = \frac{1}{n+1} \sum_{j=0}^{n} S_j.
   \label{eq:Arithmetic Average}
 \end{equation}
+At maturity ($t = 25$), $C_{25}$ contains the sum of all prices from
+$S_0$ to $S_{25}$. We then divide by $n+1 = 26$ to obtain the average
+$\bar{S}_n = C_{25}/26$. We use n + 1 in the denominator instead of n 
+because we are including $S_0$ which means we have one more data point
+than the number of periods.
+
+
 
 \begin{figure}[H]
   \centering
-  \includegraphics[height=0.6\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_avg_moves.pdf}
+  \includegraphics[width=\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_avg_moves.pdf}
   \caption{Binomial tree with 3 periods. Each node contains the stock price and the average at that point in time.}
   \label{fig:tree_avg}
 \end{figure}
-
-To compute the arithmetic average at each terminal node, we use the
-cumulative sum $C_t$ stored at each node throughout the tree. At
-maturity ($t = 25$), $C_{25}$ contains the sum of all prices from
-$S_0$ to $S_{25}$. We then divide by $n+1 = 26$ to obtain the average
-$\bar{S}_n = C_{25}/26$.
 
 \begin{itemize}
   \item Graphs descriptions (Andrea)
@@ -186,13 +216,13 @@ $\bar{S}_n = C_{25}/26$.
     \begin{minipage}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{graphs/distributions/C_terminal_distribution_25n.pdf}
-        \caption*{Distributions of Sum of Spots at Terminal Nodes}
+        \caption*{Distributions of Sum of Spots ($C$) at Terminal Nodes}
     \end{minipage}
     \hfill
     \begin{minipage}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{graphs/paths/C_paths_12n.pdf}
-        \caption*{Paths of Sum of Spots}
+        \caption*{All paths of Sum of Spots ($C$) up to time \\ \($t=12$\)}
     \end{minipage}
 
     \vspace{0.4cm}
@@ -200,20 +230,19 @@ $\bar{S}_n = C_{25}/26$.
     \begin{minipage}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{graphs/distributions/S_bar_terminal_distribution_25n.pdf}
-        \caption*{Distributions of Arithmetic Average at Terminal Nodes}
+        \caption*{Distributions of Arithmetic Averages ($\bar{S}$) at Terminal Nodes}
     \end{minipage}
     \hfill
     \begin{minipage}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{graphs/distributions/S_terminal_distribution_25n.pdf}
-        \caption*{Distributions of Stock Prices at Terminal Nodes}
+        \caption*{Distributions of Stock Prices ($S$) at Terminal Nodes}
     \end{minipage}
-
-    \caption{Four figures arranged in a 2x2 layout.}
-    \label{fig:four_images}
+    \caption{Terminal-node distributions and paths used to construct the arithmetic average in the binomial tree.}
+    \label{fig:payoff_distributions}
 \end{figure}
 
-
+\newpage
 
 \section{Payoff at Terminal Nodes}
 \label{sec:payoff}
@@ -239,7 +268,7 @@ worthless and the payoff is zero.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[height=0.6\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_avg_payoff.pdf}
+  \includegraphics[width=\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_avg_payoff.pdf}
   \caption{Extract of the first 3 nodes from the Binomial tree with 25 nodes. Here note that the payoff is only computed at the terminal nodes (t=25) and not at the intermediate nodes, the values are only for illustration and were not used for computing.}
   \label{fig:tree_payoff}
 \end{figure}
@@ -249,9 +278,16 @@ computed at the terminal nodes of the binomial tree ($t = 25$).
 
 \begin{table}[H]
   \centering
+  \caption{Descriptive statistics of the payoff $A_T$ at the terminal nodes ($t = 25$).}
+  \label{tab:stats_V}
+
+  \small
+  \setlength{\tabcolsep}{6pt}
+  \renewcommand{\arraystretch}{1.15}
+
   \begin{tabular}{lr}
     \toprule
-    Statistic & Value (\$) \\
+    \textbf{Statistic} & \textbf{Value (\$)} \\
     \midrule
     Count     & $3.36 \times 10^7$ \\
     Mean      & 15.71 \\
@@ -263,8 +299,6 @@ computed at the terminal nodes of the binomial tree ($t = 25$).
     Max       & 321.58 \\
     \bottomrule
   \end{tabular}
-  \caption{Descriptive statistics of the payoff $A_T$ at the terminal nodes ($t = 25$).}
-  \label{tab:stats_V}
 \end{table}
 
 The distribution of $A_T$ is right-skewed: the median is zero, meaning more than half 
@@ -282,19 +316,20 @@ period.
     \begin{minipage}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{graphs/distributions/V_terminal_distribution_25n.pdf}
-        \caption*{Distribution of Payoff at terminal Nodes}
+        \caption*{Distribution of the Payoffs at terminal nodes $V_T$}
     \end{minipage}
     \hfill
     \begin{minipage}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{graphs/distributions/V_terminal_distribution_25n_excl_zero.pdf}
-        \caption*{Excluding Payoff = 0}
+        \caption*{Distribution of the terminal payoffs $V_T$ excluding $V_T$ = 0}
     \end{minipage}
+    \caption{Distribution of terminal option payoffs with and without zero-payoff outcomes.}
     \label{fig:four_images}
 \end{figure}
 
 
-
+\newpage
 
 
 \section{Risk-Neutral Probabilities}
@@ -314,7 +349,7 @@ of up moves over $n = 25$ steps, approximated by a normal distribution
 with mean $\mu_q = nq$ and variance $\sigma_q^2 = nq(1-q)$.
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{graphs/distribution_q.pdf}
+    \includegraphics[width=\textwidth]{graphs/distribution_q.png}
     \caption{Risk-Neutral Distribution of Up Moves ($n = 25$ steps, AAPL)}
     \label{fig:distribution_q}
 \end{figure}
@@ -332,36 +367,56 @@ of $-0.080$, the distribution of $q$ is nearly symmetric and close to normal.
 
 \begin{table}[H]
   \centering
-  \small
-  \resizebox{\textwidth}{!}{
-  \begin{tabular}{lcccccc}
-    \hline
-      \textbf{Interest rate / Volatility} 
-      & \textbf{0.20} 
-      & \textbf{0.25} 
-      & \textbf{0.30} 
-      & \textbf{0.3130 actual} 
-      & \textbf{0.35} 
-      & \textbf{0.40} \\
-    \hline
-      0.0000 & 0.492929 & 0.491162 & 0.489395 & 0.488934 & 0.487628 & 0.485862 \\
-      0.0025 & 0.493813 & 0.491869 & 0.489984 & 0.489499 & 0.488133 & 0.486303 \\
-      0.0050 & 0.494697 & 0.492576 & 0.490573 & 0.490064 & 0.488638 & 0.486745 \\
-      0.0075 & 0.495581 & 0.493283 & 0.491162 & 0.490628 & 0.489143 & 0.487187 \\
-      0.0100 & 0.496465 & 0.493990 & 0.491752 & 0.491193 & 0.489648 & 0.487629 \\
-      0.0125 & 0.497349 & 0.494697 & 0.492341 & 0.491758 & 0.490153 & 0.488070 \\
-      0.0150 & 0.498233 & 0.495404 & 0.492930 & 0.492322 & 0.490658 & 0.488512 \\
-      0.0175 & 0.499117 & 0.496112 & 0.493519 & 0.492887 & 0.491163 & 0.488954 \\
-      0.0200 & 0.500001 & 0.496819 & 0.494109 & 0.493452 & 0.491668 & 0.489396 \\
-    \hline
-  \end{tabular}
-  }
-  \caption{Sensitivity table of q for different interest rates and volatilities.}
+  \caption{Sensitivity of the risk-neutral probability \(q\) to interest rates and volatilities.}
   \label{tab:sensitivity_rates_volatility}
+
+  \small
+  \setlength{\tabcolsep}{6pt}
+  \renewcommand{\arraystretch}{1.15}
+
+  \begin{tabular}{lrrr>{\columncolor{gray!10}}rrr}
+    \toprule
+    \textbf{Interest rate}
+    & \multicolumn{6}{c}{\textbf{Volatility}} \\
+    \cmidrule(lr){2-7}
+    & {\textbf{0.20}}
+    & {\textbf{0.25}}
+    & {\textbf{0.30}}
+    & {\cellcolor{gray!10}\textbf{0.3130}}
+    & {\textbf{0.35}}
+    & {\textbf{0.40}} \\
+    \midrule
+    0.0000 & 0.492929 & 0.491162 & 0.489395 & 0.488934 & 0.487628 & 0.485862 \\
+    0.0025 & 0.493813 & 0.491869 & 0.489984 & 0.489499 & 0.488133 & 0.486303 \\
+    0.0050 & 0.494697 & 0.492576 & 0.490573 & 0.490064 & 0.488638 & 0.486745 \\
+    0.0075 & 0.495581 & 0.493283 & 0.491162 & 0.490628 & 0.489143 & 0.487187 \\
+
+    \rowcolor{gray!10}
+    \textbf{0.0100}
+    & 0.496465
+    & 0.493990
+    & 0.491752
+    & \cellcolor{gray!25}\textbf{0.491193}
+    & 0.489648
+    & 0.487629 \\
+
+    0.0125 & 0.497349 & 0.494697 & 0.492341 & 0.491758 & 0.490153 & 0.488070 \\
+    0.0150 & 0.498233 & 0.495404 & 0.492930 & 0.492322 & 0.490658 & 0.488512 \\
+    0.0175 & 0.499117 & 0.496112 & 0.493519 & 0.492887 & 0.491163 & 0.488954 \\
+    0.0200 & 0.500001 & 0.496819 & 0.494109 & 0.493452 & 0.491668 & 0.489396 \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{2mm}
+  \begin{minipage}{0.92\textwidth}
+    \footnotesize
+    \textit{Note.} The highlighted cell corresponds to the actual parameter combination,
+    \(r = 0.0100\) and \(\sigma = 0.3130\).
+  \end{minipage}
 \end{table}
 
 
-
+\newpage
 
 
 \section{Backward Induction and Option Price}
@@ -390,8 +445,8 @@ from maturity back to the initial node. Essentially we are computing the expecte
 
 \begin{figure}[H]
   \centering
-  \includegraphics[height=0.6\textwidth]{graphs/backward_induction/backward_induction_tree_3n.pdf}
-  \caption{Backward induction tree with 3 periods. Each node contains the stock price, the average, and the option value at that point in time.}
+  \includegraphics[width=\textwidth]{graphs/backward_induction/backward_induction_tree_25n_first_3_steps.pdf}
+  \caption{Extract of the last three steps of the 25-period backward-induction tree. Each node contains the stock price, the arithmetic average, and the option value at that point in time.}
   \label{fig:backward_induction_tree}
 \end{figure}
 
@@ -417,7 +472,7 @@ leading to a lower expected payoff.
 
 
 
-
+\newpage
 
 
 
@@ -440,56 +495,92 @@ To further contextualise the floating-strike price, we also price the Asian opti
 under a fixed-strike specification using Monte Carlo.
 Table~\ref{tab:fixed_strike} reports prices for five representative strikes.
 \begin{table}[H]
-\centering
-\caption{Monte Carlo prices of the Asian call under fixed strikes
-(500{,}000 simulations, $\sigma = 31.30\%$, $r = 1\%$,
-$T = 0.5$ years).}
-\label{tab:fixed_strike}
-\begin{tabular}{cc}
-\toprule
-\textbf{Strike} $K$ (\$) &amp; \textbf{MC Price} (\$) \\
-\midrule
-164.38 &amp; 106.81 \\
-249.03 &amp; 26.29 \\
-271.46 &amp; 12.39 \\
-296.16 &amp; 4.19 \\
-\bottomrule
-\end{tabular}
+  \centering
+  \caption{Monte Carlo prices of the Asian call under fixed strikes
+  (500{,}000 simulations, $\sigma = 31.30\%$, $r = 1\%$,
+  $T = 0.5$ years).}
+  \label{tab:fixed_strike}
+
+  \small
+  \setlength{\tabcolsep}{6pt}
+  \renewcommand{\arraystretch}{1.15}
+
+  \begin{tabular}{rr}
+    \toprule
+    \textbf{Strike} $K$ (\$) & \textbf{MC Price} (\$) \\
+    \midrule
+    164.38 & 106.81 \\
+    249.03 & 26.29 \\
+    271.46 & 12.39 \\
+    296.16 & 4.19 \\
+    \bottomrule
+  \end{tabular}
 \end{table}
-\begin{itemize}
+
+
 \begin{table}[H]
   \centering
-  \small
-  \resizebox{\textwidth}{!}{
-  \begin{tabular}{lcccccc}
-    \hline
-      \textbf{Interest rate / Volatility} 
-      & \textbf{0.20} 
-      & \textbf{0.25} 
-      & \textbf{0.30} 
-      & \textbf{0.3130 actual} 
-      & \textbf{0.35} 
-      & \textbf{0.40} \\
-    \hline
-      0.0000 & 8.780882 & 10.972976 & 13.163081 & 13.733389 & 15.350602 & 17.535324 \\
-      0.0025 & 8.862073 & 11.053213 & 13.242319 & 13.812448 & 15.428977 & 17.612780 \\
-      0.0050 & 8.943701 & 11.133786 & 13.321888 & 13.891761 & 15.507573 & 17.690423 \\
-      0.0075 & 9.025763 & 11.214693 & 13.401726 & 13.971328 & 15.586390 & 17.768251 \\
-      0.0100 & 9.108259 & 11.295934 & 13.481831 & 14.051150 & 15.665427 & 17.846264 \\
-      0.0125 & 9.191190 & 11.377509 & 13.562203 & 14.131225 & 15.744685 & 17.924462 \\
-      0.0150 & 9.274552 & 11.459418 & 13.642843 & 14.211554 & 15.824163 & 18.002845 \\
-      0.0175 & 9.358347 & 11.541659 & 13.723749 & 14.292135 & 15.903860 & 18.081412 \\
-      0.0200 & 9.442573 & 11.624233 & 13.804922 & 14.372969 & 15.983776 & 18.160163 \\
-    \hline
-  \end{tabular}
-  }
-  \caption{Sensitivity table of option values for different interest rates and volatilities.}
+  \caption{Sensitivity of the option value to interest rates and volatilities}
   \label{tab:sensitivity_option_values_rates_volatility}
+
+  \small
+  \setlength{\tabcolsep}{6pt}
+  \renewcommand{\arraystretch}{1.15}
+
+  \begin{tabular}{
+    l
+    r
+    r
+    r
+    >{\columncolor{gray!10}}r
+    r
+    r
+  }
+    \toprule
+    \textbf{Interest rate}
+    & \multicolumn{6}{c}{\textbf{Volatility}} \\
+    \cmidrule(lr){2-7}
+    & {\textbf{0.20}}
+    & {\textbf{0.25}}
+    & {\textbf{0.30}}
+    & {\cellcolor{gray!10}\textbf{0.3130}}
+    & {\textbf{0.35}}
+    & {\textbf{0.40}} \\
+    \midrule
+
+    0.0000 & 8.780882 & 10.972976 & 13.163081 & 13.733389 & 15.350602 & 17.535324 \\
+    0.0025 & 8.862073 & 11.053213 & 13.242319 & 13.812448 & 15.428977 & 17.612780 \\
+    0.0050 & 8.943701 & 11.133786 & 13.321888 & 13.891761 & 15.507573 & 17.690423 \\
+    0.0075 & 9.025763 & 11.214693 & 13.401726 & 13.971328 & 15.586390 & 17.768251 \\
+
+    \rowcolor{gray!10}
+    \textbf{0.0100}
+    & 9.108259
+    & 11.295934
+    & 13.481831
+    & \cellcolor{gray!25}\textbf{14.051150}
+    & 15.665427
+    & 17.846264 \\
+
+    0.0125 & 9.191190 & 11.377509 & 13.562203 & 14.131225 & 15.744685 & 17.924462 \\
+    0.0150 & 9.274552 & 11.459418 & 13.642843 & 14.211554 & 15.824163 & 18.002845 \\
+    0.0175 & 9.358347 & 11.541659 & 13.723749 & 14.292135 & 15.903860 & 18.081412 \\
+    0.0200 & 9.442573 & 11.624233 & 13.804922 & 14.372969 & 15.983776 & 18.160163 \\
+
+    \bottomrule
+  \end{tabular}
+
+  \vspace{2mm}
+  \begin{minipage}{0.92\textwidth}
+    \footnotesize
+    \textit{Note.} The highlighted cell corresponds to the actual parameter combination,
+    \(r = 0.0100\) and \(\sigma = 0.3130\).
+  \end{minipage}
 \end{table}
 
 
 
-
+\newpage
 
 
 \section{Normal Approximation}
@@ -554,15 +645,16 @@ distributed; it is a function of path-dependent stock prices.
     \begin{minipage}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{graphs/distributions/Dn_risk_neutral_normal_approximation.pdf}
-        \caption*{Distribution of \(D_n\) under the risk-neutral measure (blue) and its normal approximation (orange).}
+        \caption*{Risk-neutral distribution of \(D_n=S_n-\bar S_n\) and its normal approximation.}
     \end{minipage}
     \hfill
     \begin{minipage}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{graphs/distributions/Dn_positive_payoff_density.pdf}
-        \caption*{Density of \(D_n\) for paths with positive payoff (blue) and its normal approximation (orange).}
+        \caption*{Positive-payoff density of \(D_n\), used to approximate the expected payoff \(D_n^+\).}
     \end{minipage}
-    \label{fig:four_images}
+    \caption{Normal approximation of \(D_n = S_n - \bar S_n\) under the risk-neutral measure and for positive-payoff paths.}
+    \label{fig:normal_approximation}
 \end{figure}
 The first figure shows the risk-neutral terminal distribution of
 \[
@@ -590,7 +682,7 @@ This is giving us a different in price \(V^{N}_0 - V^{Bi}_0 \approx 0.21\),
 which means that the approximation with normal distribution is good. 
 This means a relative difference \(\frac{V^{N}_0 - V^{Bi}_0}{V^{Bi}_0} \approx 0.015\) or 1.5\%.
 
-
+\newpage
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -611,6 +703,13 @@ true value. However, this comes at a computational cost: the number
 of paths grows as $2^n$, which becomes very large very fast. 
 
 graph (mathis)
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{graphs/values_by_n.pdf}
+  \caption{Option price $V_0$ at different values of $n$ (number of periods) up to 25 periods.}
+  \label{fig:values_by_n}
+\end{figure}
 
 explication (juliette)
 

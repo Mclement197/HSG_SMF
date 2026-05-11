@@ -363,7 +363,8 @@ def relative_diff_Bi_Dn() -> float:
     return (Dn_price - Bi) / Bi
 
 
-Bi, tree = get_v0(25, return_tree=True)
+if __name__ == "__main__":
+    Bi, tree = get_v0(25, return_tree=True)
 
-print(get_robustness_matrix_q(tree))
-print(get_robustness_matrix_v0(tree))
+    print(get_robustness_matrix_q(tree))
+    print(get_robustness_matrix_v0(tree))
