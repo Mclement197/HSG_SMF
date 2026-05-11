@@ -97,7 +97,19 @@
   \item Graph of appl (Andrea)
   \item Small introduction (Andrea)
 \end{itemize}
-
+Asian options are path-dependent derivatives whose payoff depends on the average
+price of the underlying asset over the life of the contract, rather than solely on
+its terminal value. This averaging feature reduces sensitivity to short-term price
+variation, making Asian options particularly prevalent in equity and
+commodity markets. This paper focuses on a European floating-strike Asian call option
+written on Apple Inc. (AAPL), in which the strike is determined by the
+realized arithmetic average of the underlying over the option&#39;s life.
+We price this derivative using a multi-period binomial tree with $n = 25$ periods,
+$T = 6$ months, and parameters calibrated on daily AAPL returns from 2020 to 2026
+($S_0 = \$270.71$, $\sigma = 31.31\%$). Path-dependence is handled by augmenting
+the state space with the cumulative sum $C_t = \sum_{j=0}^{t} S_j$, enabling
+backward induction under the risk-neutral measure. Results are validated through a
+normal approximation and a robustness analysis over the key model parameters.
 
 
 
@@ -224,6 +236,20 @@ $\bar{S}_n = C_{25}/26$.
 \begin{itemize}
   \item explain the payoff (Andrea)
   \item add formula (Andrea)
+\end{itemize}
+Asian options are path-dependent derivatives whose payoff depends on the average price
+of the underlying asset over the life of the contract, rather than solely on its terminal
+value. This paper prices a European floating-strike Asian call option written on Apple
+Inc. (AAPL), with payoff at maturity:
+\begin{equation}
+A_T = \max\!\left(S_n - \frac{1}{n+1}\sum_{t=0}^{n} S_t,\ 0\right)
+\end{equation}
+The option pays off when the terminal price exceeds the realized arithmetic average, a
+structure that is path-dependent, as the payoff cannot be recovered from the
+terminal price alone.
+
+
+\begin{itemize}
   \item Explain how we got these results (Juliette)
 \end{itemize}
 For each terminal node ($t=25$), we already have the final price 
@@ -435,10 +461,43 @@ leading to a lower expected payoff.
 
 \begin{itemize}
   \item matrix with different q same as earlier before (Mathis)
-  \item Compare price with MC 2std fixed strike (Andrea) 
-  \item Comapre the different scenarios (Andrea)
+  \item Compare price with MC 2std fixed strike (Andrea)
 \end{itemize}
 
+\begin{itemize}
+  \item Comapre the different scenarios (Andrea)
+\end{itemize}
+As a robustness check, we compare our binomial tree price against a Monte Carlo
+simulation using 500{,}000 paths with identical parameters
+($S_0$, $\sigma = 31.30\%$, $r = 1\%$, $T = 0.5$ years, $n = 25$ periods).
+The Monte Carlo yields a price of \$13.87 (95\% CI: [13.80,\,13.93]),
+which is close to our backward-induction price of $V_0^{\mathrm{Bi}} = \$14.05$.
+The difference of \$0.18 (approximately 1.3\%) is consistent with the
+discretisation error inherent to a 25-period binomial tree.
+As $n \to \infty$, the binomial price converges to the true continuous-time price,
+and this gap would close. The agreement between both methods validates our
+implementation.
+To further contextualise the floating-strike price, we also price the Asian option
+under a fixed-strike specification using Monte Carlo.
+Table~\ref{tab:fixed_strike} reports prices for five representative strikes.
+\begin{table}[H]
+\centering
+\caption{Monte Carlo prices of the Asian call under fixed strikes
+(500{,}000 simulations, $\sigma = 31.30\%$, $r = 1\%$,
+$T = 0.5$ years).}
+\label{tab:fixed_strike}
+\begin{tabular}{cc}
+\toprule
+\textbf{Strike} $K$ (\$) &amp; \textbf{MC Price} (\$) \\
+\midrule
+164.38 &amp; 106.81 \\
+249.03 &amp; 26.29 \\
+271.46 &amp; 12.39 \\
+296.16 &amp; 4.19 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\begin{itemize}
 \begin{table}[H]
   \centering
   \small
