@@ -93,10 +93,7 @@
 
 \section{Introduction}
 \label{sec:intro}
-\begin{itemize}
-  \item Graph of appl (Andrea)
-  \item Small introduction (Andrea)
-\end{itemize}
+
 Asian options are path-dependent derivatives whose payoff depends on the average
 price of the underlying asset over the life of the contract, rather than solely on
 its terminal value. This averaging feature reduces sensitivity to short-term price
@@ -115,11 +112,6 @@ normal approximation and a robustness analysis over the key model parameters.
 
 \section{Building the Binomial Tree}
 \label{sec:tree}
-
-\begin{itemize}
-  \item graph of small tree only prices (Mathis) DONE
-  \item explain how we build the tree (Juliette) DONE 
- \end{itemize}
 
 We build the binomial tree as follows. The starting point is the closing 
 price of Apple on April 28, 2026, denoted $S_0 \approx \$270$. At each 
@@ -146,7 +138,6 @@ shown in Figure~\ref{fig:tree}.
 \begin{itemize}
   \item explain u and d (Mathis)
   \item explain how we compute the stock price at each node (Mathis)
-  \item link number of nodes to numbre of periods 1+t (Juliette) DONE 
 \end{itemize}
 At each period $t$, a recombining tree has $t+1$ distinct price nodes. 
 At $t=25$, this gives 26 distinct prices. However, since the Asian 
@@ -165,11 +156,6 @@ average $\bar{S}_n$ for each path.
 \section{Arithmetic Average at Terminal Nodes}
 \label{sec:average}
 
-\begin{itemize}
-  \item add formula for average (Mathis) DONE
-  \item add tree with average (Mathis) DONE
-  \item Explain how we got these results (Juliette) DONE 
-\end{itemize}
 
 \begin{equation}
   \bar{S}_n = \frac{1}{n+1} \sum_{j=0}^{n} S_j
@@ -190,7 +176,6 @@ $S_0$ to $S_{25}$. We then divide by $n+1 = 26$ to obtain the average
 $\bar{S}_n = C_{25}/26$.
 
 \begin{itemize}
-  \item add distributions (2x2 graph): C (distribution + Paths), S-bar (distribution), S (distribution) (Mathis) DONE
   \item Graphs descriptions (Andrea)
   \item calcualte skewness and kurtosis of these distributions (Erwan)
 \end{itemize}
@@ -233,10 +218,6 @@ $\bar{S}_n = C_{25}/26$.
 \section{Payoff at Terminal Nodes}
 \label{sec:payoff}
 
-\begin{itemize}
-  \item explain the payoff (Andrea)
-  \item add formula (Andrea)
-\end{itemize}
 Asian options are path-dependent derivatives whose payoff depends on the average price
 of the underlying asset over the life of the contract, rather than solely on its terminal
 value. This paper prices a European floating-strike Asian call option written on Apple
@@ -249,19 +230,12 @@ structure that is path-dependent, as the payoff cannot be recovered from the
 terminal price alone.
 
 
-\begin{itemize}
-  \item Explain how we got these results (Juliette)
-\end{itemize}
 For each terminal node ($t=25$), we already have the final price 
 $S_{25}$ and the arithmetic average $\bar{S}_n$ computed in the 
 previous step. The option payoff is then $A_T = \max(S_{25} - 
 \bar{S}_n, 0)$. If the final price exceeds the average, the option 
 has a strictly positive value $A_T > 0$. Otherwise, the option expires 
 worthless and the payoff is zero.
-\begin{itemize}
-  \item Tree picture (With the payoff at the terminal nodes) (Mathis) DONE
-  \item Stats (done by Juliette)
-\end{itemize}
 
 \begin{figure}[H]
   \centering
@@ -300,7 +274,6 @@ paths expire worthless while a small number of highly favourable paths drive the
 The maximum payoff of 321.58 corresponds to the path where the stock price increases at every 
 period.
 \begin{itemize}
-  \item Payoff distribution (Terminal Nodes) (Mathis) DONE
   \item Description and interpretation of the payoff distribution (Andrea)
 \end{itemize}
 
@@ -394,12 +367,6 @@ of $-0.080$, the distribution of $q$ is nearly symmetric and close to normal.
 \section{Backward Induction and Option Price}
 \label{sec:backwardinduction}
 
-\begin{itemize}
-  \item explain backward induction depends on q and how we get the result (Mathis)
-  \item graph of the tree with values (Mathis) DONE
-  \item Presentation of our result (Juliette) DONE
-\end{itemize}
-
 
 To perform backward induction, we priced the option by first computing its terminal payoff (or the value of the option at maturity) for each terminal node,
 \[
@@ -459,14 +426,6 @@ leading to a lower expected payoff.
 \section{Robustness Check}
 \label{sec:robustness}
 
-\begin{itemize}
-  \item matrix with different q same as earlier before (Mathis)
-  \item Compare price with MC 2std fixed strike (Andrea)
-\end{itemize}
-
-\begin{itemize}
-  \item Comapre the different scenarios (Andrea)
-\end{itemize}
 As a robustness check, we compare our binomial tree price against a Monte Carlo
 simulation using 500{,}000 paths with identical parameters
 ($S_0$, $\sigma = 31.30\%$, $r = 1\%$, $T = 0.5$ years, $n = 25$ periods).
@@ -535,10 +494,6 @@ $T = 0.5$ years).}
 
 \section{Normal Approximation}
 \label{sec:normal}
-
-\begin{itemize}
-  \item Values distribution (Mathis) DONE
-\end{itemize}
 
 To approximate the price of the floating-strike Asian call, we approximate
 the distribution of
@@ -646,18 +601,20 @@ This means a relative difference \(\frac{V^{N}_0 - V^{Bi}_0}{V^{Bi}_0} \approx 0
   \begin{itemize}
     \item comparaison with MC (Andrea)
   \end{itemize}
-  \item possible extensions (Juliette) DONE
-  \begin{itemize}
-    \item more iterations, more periods... (Juliette) 
-  \end{itemize}
+
 \end{itemize}
 Our model relies on several simplifying assumptions that open the
 door to possible extensions. First, increasing the number of periods
 $n$ would yield a more accurate price. With $n=25$, the result is
 an approximation and the larger $n$, the more $V_0$ converges to the
 true value. However, this comes at a computational cost: the number 
-of paths grows as $2^n$, which becomes very large very fast. Second, 
-extending the maturity beyond $T = 0.5$ years would allow us to study 
+of paths grows as $2^n$, which becomes very large very fast. 
+
+graph (mathis)
+
+explication (juliette)
+
+Second, extending the maturity beyond $T = 0.5$ years would allow us to study 
 how the option price depends on the time horizon, and whether longer 
 maturities lead to significantly different prices. Finally, using a 
 time-varying volatility instead of a constant $\sigma$ would better 
