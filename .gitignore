@@ -32,3 +32,5 @@ hand_in/handin.synctex.gz
 hand_in/proof-q.pdf
 hand_in/handin.pdf
 *.cpython-313.pyc
+project/__pycache__/graphs.cpython-311.pyc
+project/__pycache__/helpers.cpython-313.pyc
