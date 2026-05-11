@@ -30,6 +30,7 @@
 \lhead{\small Stochastic Methods in Finance - Assignment}
 \rhead{\small University of St.~Gallen, Spring 2026}
 \cfoot{\thepage}
+\setlength{\headheight}{14pt}
 \renewcommand{\headrulewidth}{0.4pt}
 
 % Theorem-like environments
@@ -83,7 +84,7 @@
   \vfill
   {\large Supervisor: Prof.~Enrico De Giorgi \par}
   \vspace{0.3cm}
-  {\large Submitted: 18 May 2026 \par}
+  {\large Submission Date: 18 May 2026 \par}
 \end{titlepage}
 
 \tableofcontents
@@ -91,18 +92,30 @@
 
 \section{Introduction}
 \label{sec:intro}
-\begin{itemize}
-  \item Graph of appl (Andrea)
-  \item Small introduction (Andrea)
-\end{itemize}
+Asian options are path-dependent derivatives whose payoff depends on the average 
+price of the underlying asset over the life of the contract, rather than solely on 
+its terminal value. This averaging feature reduces sensitivity to short-term price 
+variation, making Asian options particularly prevalent in equity and 
+commodity markets. This paper focuses on a European floating-strike Asian call option 
+written on Apple Inc. (AAPL), in which the strike is determined by the 
+realized arithmetic average of the underlying over the option's life.
+
+We price this derivative using a multi-period binomial tree with $n = 25$ periods, 
+$T = 6$ months, and parameters calibrated on daily AAPL returns from 2020 to 2026 
+($S_0 = \$270.71$, $\sigma = 31.31\%$). Path-dependence is handled by augmenting 
+the state space with the cumulative sum $C_t = \sum_{j=0}^{t} S_j$, enabling 
+backward induction under the risk-neutral measure. Results are validated through a 
+normal approximation and a robustness analysis over the key model parameters.
+
 
 \section{Building the Binomial Tree}
 \label{sec:tree}
 
 \begin{itemize}
-  \item graph of small tree only prices (Mathis)
-  \item explain how we build the tree (Juliette) 
+  \item graph of small tree only prices (Mathis) DONE
+  \item explain how we build the tree (Juliette) DONE 
  \end{itemize}
+
 We build the binomial tree as follows. The starting point is the closing 
 price of Apple on April 28, 2026, denoted $S_0$. At each period, the 
 price either goes up (multiplied by $u$) or down (multiplied by $d$), 
@@ -115,39 +128,130 @@ Starting from $S_0$, each node splits into two branches: an up-branch
 tree contains $2^{25} \approx 33$ million possible paths. At each node, 
 we store the cumulative sum $C_t = \sum_{j=0}^{t} S_j$, needed to 
 compute the arithmetic average $\bar{S}_n = C_n/(n+1)$.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[height=0.6\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_moves.png}
+  \caption{Binomial tree with 3 periods. Each node contains the stock price at that point in time.}
+  \label{fig:tree}
+\end{figure}
+
 \begin{itemize}
-  
   \item explain u and d (Mathis)
   \item explain how we compute the stock price at each node (Mathis)
-  \item link number of nodes to numbre of periods 1+t (Juliette)
+  \item link number of nodes to numbre of periods 1+t (Juliette) DONE 
 \end{itemize}
+At each period $t$, a recombining tree has $t+1$ distinct price nodes.
+At $t=25$, this gives 26 distinct prices. However, since the Asian
+option payoff depends on the arithmetic average $\bar{S}_n$, two paths
+reaching the same final price can yield different payoffs. We therefore
+track all $2^{25} \approx 33$ million paths separately, even though
+they converge to only 26 distinct prices at maturity.
+
+
+
+
 
 \section{Arithmetic Average at Terminal Nodes}
 \label{sec:average}
 
 \begin{itemize}
-  \item add formula for average (Mathis)
-  \item add tree with average (Mathis)
-  \item Explain how we got these results (Juliette)
-  \item add distributions (2x2 graph): C (distribution + Paths), S-bar (distribution), S (distribution) (Mathis) 
+  \item add formula for average (Mathis) DONE
+  \item add tree with average (Mathis) DONE
+  \item Explain how we got these results (Juliette) DONE 
+\end{itemize}
+
+\begin{equation}
+  \bar{S}_n = \frac{1}{n+1} \sum_{j=0}^{n} S_j
+  \label{eq:Arithmetic Average}
+\end{equation}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[height=0.6\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_avg_moves.png}
+  \caption{Binomial tree with 3 periods. Each node contains the stock price and the average at that point in time.}
+  \label{fig:tree_avg}
+\end{figure}
+
+To compute the arithmetic average at each terminal node, we use the
+cumulative sum $C_t$ stored at each node throughout the tree. At
+maturity ($t = 25$), $C_{25}$ contains the sum of all prices from
+$S_0$ to $S_{25}$. We then divide by $n+1 = 26$ to obtain the average
+$\bar{S}_n = C_{25}/26$.
+
+\begin{itemize}
+  \item add distributions (2x2 graph): C (distribution + Paths), S-bar (distribution), S (distribution) (Mathis) DONE
   \item Graphs descriptions (Andrea)
   \item calcualte skewness and kurtosis of these distributions (Erwan)
 \end{itemize}
+
+\begin{figure}[H]
+    \centering
+
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{graphs/distributions/C_terminal_distribution_25n.png}
+        \caption*{Distributions of Sum of Spots at Terminal Nodes}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{graphs/paths/C_paths_12n.png}
+        \caption*{Paths of Sum of Spots}
+    \end{minipage}
+
+    \vspace{0.4cm}
+
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{graphs/distributions/S_bar_terminal_distribution_25n.png}
+        \caption*{Distributions of Arithmetic Average at Terminal Nodes}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{graphs/distributions/S_terminal_distribution_25n.png}
+        \caption*{Distributions of Stock Prices at Terminal Nodes}
+    \end{minipage}
+
+    \caption{Four figures arranged in a 2x2 layout.}
+    \label{fig:four_images}
+\end{figure}
 
 
 
 \section{Payoff at Terminal Nodes}
 \label{sec:payoff}
 
+Asian options are path-dependent derivatives whose payoff depends on the average price
+of the underlying asset over the life of the contract, rather than solely on its terminal
+value. This paper prices a European floating-strike Asian call option written on Apple
+Inc. (AAPL), with payoff at maturity:
+\begin{equation}
+    A_T = \max\!\left(S_n - \frac{1}{n+1}\sum_{t=0}^{n} S_t,\ 0\right)
+\end{equation}
+The option pays off when the terminal price exceeds the realized arithmetic average, a
+structure that is path-dependent, as the payoff cannot be recovered from the
+terminal price alone.
+
+For each terminal node ($t=25$), we already have the final price
+$S_{25}$ and the arithmetic average $\bar{S}_n$ computed in the
+previous step. The option payoff is then $A_T = \max(S_{25} -
+\bar{S}_n, 0)$. If the final price exceeds the average, the option
+has value. Otherwise, the option expires worthless and the payoff
+is zero.
 \begin{itemize}
-  \item explain the payoff (Andrea)
-  \item add formula (Andrea)
   \item Explain how we got these results (Juliette)
-  \item Tree picture (With the payoff at the terminal nodes) (Mathis)
+  \item Tree picture (With the payoff at the terminal nodes) (Mathis) DONE
   \item Stats (done by Juliette)
-  \item Payoff distribution (Terminal Nodes) (Mathis)
-  \item Description and interpretation of the payoff distribution (Andrea)
 \end{itemize}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[height=0.6\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_avg_payoff.png}
+  \caption{Extract of the first 3 nodes from the Binomial tree with 25 nodes. Here note that the payoff is only computed at the terminal nodes (t=25) and not at the intermediate nodes, the values are only for illustration and were not used for computing.}
+  \label{fig:tree_payoff}
+\end{figure}
 
 Table~\ref{tab:stats_V} reports descriptive statistics of the payoff $A_T = \max(S_n - \bar{S}_n, 0)$ 
 computed at the terminal nodes of the binomial tree ($t = 25$).
@@ -178,6 +282,30 @@ deviation (24.71) exceeds the mean (15.71), reflecting the high dispersion of pa
 paths expire worthless while a small number of highly favourable paths drive the mean upward. 
 The maximum payoff of 321.58 corresponds to the path where the stock price increases at every 
 period.
+\begin{itemize}
+  \item Payoff distribution (Terminal Nodes) (Mathis) DONE
+  \item Description and interpretation of the payoff distribution (Andrea)
+\end{itemize}
+
+\begin{figure}[H]
+  \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{graphs/distributions/V_terminal_distribution_25n.png}
+        \caption*{Distribution of Payoff at terminal Nodes}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{graphs/distributions/V_terminal_distribution_25n_excl_zero.png}
+        \caption*{Excluding Payoff = 0}
+    \end{minipage}
+    \label{fig:four_images}
+\end{figure}
+
+
+
+
 
 \section{Risk-Neutral Probabilities}
 \label{sec:riskneutral}
@@ -186,40 +314,301 @@ period.
   \item intro why we need q (Erwan)
   \item proof of q (Erwan)
   \item explain relation with vol and interest rate (Erwan)
-  \item Matrix vol interest rate (Mathis)
+  \item Matrix vol interest rate (Mathis) DONE
   \item Interpretation of q matrix (Erwan)
   \item show result of q (Erwan)
   \item Distribution of the payoff under q vs p (Juliette)
-  \item Description of the differences between the two distributions (Juliette)
+  \item Description of the differences between the two distributions (Juliette) DONE 
 \end{itemize}
+Both $p$ and $q$ represent the probability of an up-move, but they
+differ in nature. $p = 0.5$ is the physical probability assumed by
+the model, meaning Apple has equal chances of going up or down.
+$q \approx 0.491$ is the risk-neutral probability, derived from the
+no-arbitrage condition. It does not depend on $p$, but on $r$
+and $\sigma$.
+
+The two distributions are very similar because $r = 1\%$ is small.
+If $r$ were higher, $q$ would be further from $0.5$ and the two
+distributions would differ more. The fact that $q < p$ means that
+under the risk-neutral measure, the stock has slightly less chance
+of going up than in the real world.
+
+\begin{table}[H]
+  \centering
+  \small
+  \resizebox{\textwidth}{!}{
+  \begin{tabular}{lcccccc}
+    \hline
+      \textbf{Interest rate / Volatility} 
+      & \textbf{0.20} 
+      & \textbf{0.25} 
+      & \textbf{0.30} 
+      & \textbf{0.3130 actual} 
+      & \textbf{0.35} 
+      & \textbf{0.40} \\
+    \hline
+      0.0000 & 0.492929 & 0.491162 & 0.489395 & 0.488934 & 0.487628 & 0.485862 \\
+      0.0025 & 0.493813 & 0.491869 & 0.489984 & 0.489499 & 0.488133 & 0.486303 \\
+      0.0050 & 0.494697 & 0.492576 & 0.490573 & 0.490064 & 0.488638 & 0.486745 \\
+      0.0075 & 0.495581 & 0.493283 & 0.491162 & 0.490628 & 0.489143 & 0.487187 \\
+      0.0100 & 0.496465 & 0.493990 & 0.491752 & 0.491193 & 0.489648 & 0.487629 \\
+      0.0125 & 0.497349 & 0.494697 & 0.492341 & 0.491758 & 0.490153 & 0.488070 \\
+      0.0150 & 0.498233 & 0.495404 & 0.492930 & 0.492322 & 0.490658 & 0.488512 \\
+      0.0175 & 0.499117 & 0.496112 & 0.493519 & 0.492887 & 0.491163 & 0.488954 \\
+      0.0200 & 0.500001 & 0.496819 & 0.494109 & 0.493452 & 0.491668 & 0.489396 \\
+    \hline
+  \end{tabular}
+  }
+  \caption{Sensitivity table of q for different interest rates and volatilities.}
+  \label{tab:sensitivity_rates_volatility}
+\end{table}
+
+
+
+
 
 \section{Backward Induction and Option Price}
 \label{sec:backwardinduction}
 
 \begin{itemize}
   \item explain backward induction depends on q and how we get the result (Mathis)
-  \item graph of the tree with values (Mathis)
-  \item Presentation of our result (Juliette)
+  \item graph of the tree with values (Mathis) DONE
+  \item Presentation of our result (Juliette) DONE
+\end{itemize}
+
+
+To perform backward induction, we priced the option by first computing its terminal payoff (or the value of the option at maturity) for each terminal node,
+\[
+V_T=(S_T-\bar S_T)^+,
+\qquad 
+\bar S_T=\frac{1}{T+1}\sum_{t=0}^{T}S_t .
+\]
+Then, we moved backwards through the binomial tree. At each node, the option value is the discounted risk-neutral expected value of the two next possible values:
+\[
+V_t=e^{-r\Delta t}\left(qV_{t+1}^{u}+(1-q)V_{t+1}^{d}\right).
+\]
+The martingale measure $q$ found above
+\[
+q=\frac{e^{r\Delta t}-d}{u-d} \approx 0.491
+\]
+is not the real probability of an up move. 
+It is the risk-neutral probability chosen 
+so that the expected stock return equals the risk-free return. Therefore, 
+the final price \(V_0\) is obtained by recursively applying this formula 
+from maturity back to the initial node. Essentially we are computing the expected value of the option at each node until we reach $t=0$.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[height=0.6\textwidth]{graphs/backward_induction/backward_induction_tree_3n.png}
+  \caption{Backward induction tree with 3 periods. Each node contains the stock price, the average, and the option value at that point in time.}
+  \label{fig:backward_induction_tree}
+\end{figure}
+
+The arbitrage-free price of the Asian call option at $t=0$ is obtained
+by applying backward induction over the entire binomial tree using the
+risk-neutral probability $q$:
+
+\[
+  \boxed{V_0 \approx 14.05115}
+\]
+
+\vspace{0.3cm}
+
+This means that an investor should pay \$14.05 today to enter this
+contract. Note that $V_0$ is lower than the mean terminal payoff
+(15.71) because under the risk-neutral measure $q \approx 0.491$,
+the stock has slightly less chance of going up than under $p = 0.5$,
+leading to a lower expected payoff.
+\begin{itemize}
   \item show the price of the option being the same with different paths (Erwan)
   \item compare with MC (Andrea)
 \end{itemize}
 
+
+
+
+
+
+
+
+
 \section{Robustness Check}
 \label{sec:robustness}
 
+As a robustness check, we compare our binomial tree price against a Monte Carlo
+simulation using 500{,}000 paths with identical parameters
+($S_0$, $\sigma = 31.30\%$, $r = 1\%$, $T = 0.5$ years, $n = 25$ periods).
+The Monte Carlo yields a price of \$13.87 (95\% CI: [13.80,\,13.93]),
+which is close to our backward-induction price of $V_0^{\mathrm{Bi}} = \$14.05$.
+The difference of \$0.18 (approximately 1.3\%) is consistent with the
+discretisation error inherent to a 25-period binomial tree.
+As $n \to \infty$, the binomial price converges to the true continuous-time price,
+and this gap would close. The agreement between both methods validates our
+implementation.
+
+To further contextualise the floating-strike price, we also price the Asian option
+under a fixed-strike specification using Monte Carlo.
+Table~\ref{tab:fixed_strike} reports prices for five representative strikes.
+
+\begin{table}[H]
+    \centering
+    \caption{Monte Carlo prices of the Asian call under fixed strikes
+             (500{,}000 simulations, $\sigma = 31.30\%$, $r = 1\%$,
+             $T = 0.5$ years).}
+    \label{tab:fixed_strike}
+    \begin{tabular}{cc}
+        \toprule
+        \textbf{Strike} $K$ (\$) & \textbf{MC Price} (\$) \\
+        \midrule
+        164.38 & 106.81 \\
+        249.03 &  26.29 \\
+        271.46 &  12.39 \\
+        296.16 &   4.19 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 \begin{itemize}
   \item matrix with different q same as earlier before (Mathis)
-  \item Compare price with MC 2std fixed strike (Andrea) 
-  \item Comapre the different scenarios (Andrea)
 \end{itemize}
+
+\begin{table}[H]
+  \centering
+  \small
+  \resizebox{\textwidth}{!}{
+  \begin{tabular}{lcccccc}
+    \hline
+      \textbf{Interest rate / Volatility} 
+      & \textbf{0.20} 
+      & \textbf{0.25} 
+      & \textbf{0.30} 
+      & \textbf{0.3130 actual} 
+      & \textbf{0.35} 
+      & \textbf{0.40} \\
+    \hline
+      0.0000 & 8.780882 & 10.972976 & 13.163081 & 13.733389 & 15.350602 & 17.535324 \\
+      0.0025 & 8.862073 & 11.053213 & 13.242319 & 13.812448 & 15.428977 & 17.612780 \\
+      0.0050 & 8.943701 & 11.133786 & 13.321888 & 13.891761 & 15.507573 & 17.690423 \\
+      0.0075 & 9.025763 & 11.214693 & 13.401726 & 13.971328 & 15.586390 & 17.768251 \\
+      0.0100 & 9.108259 & 11.295934 & 13.481831 & 14.051150 & 15.665427 & 17.846264 \\
+      0.0125 & 9.191190 & 11.377509 & 13.562203 & 14.131225 & 15.744685 & 17.924462 \\
+      0.0150 & 9.274552 & 11.459418 & 13.642843 & 14.211554 & 15.824163 & 18.002845 \\
+      0.0175 & 9.358347 & 11.541659 & 13.723749 & 14.292135 & 15.903860 & 18.081412 \\
+      0.0200 & 9.442573 & 11.624233 & 13.804922 & 14.372969 & 15.983776 & 18.160163 \\
+    \hline
+  \end{tabular}
+  }
+  \caption{Sensitivity table of option values for different interest rates and volatilities.}
+  \label{tab:sensitivity_option_values_rates_volatility}
+\end{table}
+
+
+
+
+
 
 \section{Normal Approximation}
 \label{sec:normal}
 
 \begin{itemize}
-  \item Values distribution (Mathis)
-  \item Kurtosis and skewness of the distribution (Erwan)
+  \item Values distribution (Mathis) DONE
 \end{itemize}
+
+To approximate the price of the floating-strike Asian call, we approximate
+the distribution of
+
+\[
+D_n = S_n - \bar S_n
+\]
+by a normal distribution,
+
+\[
+D_n \approx N(\mu_D,\sigma_D^2).
+\]
+Since
+
+\[
+D_n = \sum_{t=0}^n a_t S_t,
+\]
+with
+
+\[
+a_t =
+\begin{cases}
+-\frac{1}{n+1}, & t=0,\dots,n-1,\\
+\frac{n}{n+1}, & t=n,
+\end{cases}
+\]
+we compute
+
+\[
+\mu_D = \sum_{t=0}^n a_t \mathbb E_Q[S_t] \approx 0.6790
+\]
+and
+
+\[
+\sigma_D^2 =
+\sum_{s=0}^n\sum_{t=0}^n
+a_s a_t \operatorname{Cov}_Q(S_s,S_t) \approx 1229.94.
+\]
+Using the normal approximation, the option price is
+
+\[
+V_0^{N}
+=
+e^{-rT}
+\left[
+\sigma_D \varphi\left(\frac{\mu_D}{\sigma_D}\right)
++
+\mu_D \Phi\left(\frac{\mu_D}{\sigma_D}\right)
+\right] \approx 14.2649.
+\]
+
+This price is then compared to the backward-induction price. The approximation is useful
+because it is computationally faster, but it is not exact because \(D_n\) is not normally
+distributed; it is a function of path-dependent stock prices.
+
+\begin{figure}[H]
+  \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{graphs/distributions/Dn_risk_neutral_normal_approximation.png}
+        \caption*{Distribution of \(D_n\) under the risk-neutral measure (blue) and its normal approximation (orange).}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{graphs/distributions/Dn_positive_payoff_density.png}
+        \caption*{Density of \(D_n\) for paths with positive payoff (blue) and its normal approximation (orange).}
+    \end{minipage}
+    \label{fig:four_images}
+\end{figure}
+The first figure shows the risk-neutral terminal distribution of
+\[
+D_n = S_n - \bar S_n
+\]
+together with the fitted normal approximation
+
+\[
+D_n \sim_Q N(\mu_D,\sigma_D^2).
+\]
+The histogram is computed using risk-neutral path weights. The normal approximation captures the main mass of the distribution, although the empirical binomial distribution remains slightly skewed.
+The second figure plots
+
+\[
+x^+ f_{D_n}(x),
+\]
+whose area corresponds to
+
+\[
+\mathbb E_Q[(D_n)^+].
+\]
+After discounting this expectation by \(e^{-rT}\), we obtain the normal approximation price \(V_0^N\).
+
+This is giving us a different in price \(V^{N}_0 - V^{Bi}_0 \approx 0.21\), 
+which means that the approximation with normal distribution is good. 
+This means a relative difference \(\frac{V^{N}_0 - V^{Bi}_0}{V^{Bi}_0} \approx 0.015\) or 1.5\%.
+
+
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -230,10 +619,23 @@ period.
   \begin{itemize}
     \item comparaison with MC (Andrea)
   \end{itemize}
-  \item possible extensions (Juliette)
+  \item possible extensions (Juliette) DONE
   \begin{itemize}
-    \item more iterations, more periods... (Juliette)
+    \item more iterations, more periods... (Juliette) 
   \end{itemize}
+\end{itemize}
+Our model relies on several simplifying assumptions that open the
+door to possible extensions. First, increasing the number of periods
+$n$ would yield a more accurate price. With $n=25$, the result is
+an approximation and the larger $n$, the more $V_0$ converges to the
+true value. Second, extending the maturity beyond 6 months would
+allow us to analyse how the option price evolves over time. Finally,
+using a stochastic volatility instead of a constant $\sigma$ would
+better reflect Apple's real behaviour. However, this extension is
+computationally demanding in our case, as the path-dependency of
+the Asian option combined with a time-varying volatility would cause
+the tree to grow exponentially.
+\begin{itemize}
   \item final remarks (Erwan)
 \end{itemize}
 \end{document}

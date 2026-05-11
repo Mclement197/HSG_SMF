@@ -3,7 +3,7 @@ name = "hsg-smf"
 version = "0.1.0"
 description = "HSG SMF Python project"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.13,<3.14"
 dependencies = [
     "graphviz>=0.21",
     "matplotlib>=3.10.9",
@@ -11,6 +11,7 @@ dependencies = [
     "pandas>=3.0.2",
     "polars>=1.40.1",
     "pyarrow>=24.0.0",
+    "scipy>=1.17.1",
     "xlsxwriter>=3.2.9",
     "yfinance>=0.2.66",
 ]
