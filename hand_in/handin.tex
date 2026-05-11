@@ -110,17 +110,19 @@
  \end{itemize}
 
 We build the binomial tree as follows. The starting point is the closing 
-price of Apple on April 28, 2026, denoted $S_0$. At each period, the 
-price either goes up (multiplied by $u$) or down (multiplied by $d$), 
-where $\Delta t = T/n = 0.02$ years. Both factors are calibrated using 
-the volatility $\sigma$ estimated from Apple's daily log-returns over 
-2020--2026. The larger $\sigma$, the larger $u$ and the smaller $d$.
+price of Apple on April 28, 2026, denoted $S_0 \approx \$270$. At each 
+period, the price either goes up (multiplied by $u$) or down (multiplied 
+by $d$), where $\Delta t = T/n = 0.02$ years, with equal probability 
+$p = 0.5$. Both factors are calibrated using the volatility $\sigma$ 
+estimated from Apple's daily log-returns over 2020--2026, using a 
+historical method.
 
 Starting from $S_0$, each node splits into two branches: an up-branch 
 ($S \times u$) and a down-branch ($S \times d$). After 25 periods, the 
-tree contains $2^{25} \approx 33$ million possible paths. At each node, 
-we store the cumulative sum $C_t = \sum_{j=0}^{t} S_j$, needed to 
-compute the arithmetic average $\bar{S}_n = C_n/(n+1)$.
+tree contains 26 nodes and $2^{25} \approx 33$ million possible paths. 
+At each node, we store the cumulative sum $C_t = \sum_{j=0}^{t} S_j$, 
+needed to compute the arithmetic average $\bar{S}_n = C_n/(n+1)$, as 
+shown in Figure~\ref{fig:tree}.
 
 \begin{figure}[H]
   \centering
@@ -134,12 +136,15 @@ compute the arithmetic average $\bar{S}_n = C_n/(n+1)$.
   \item explain how we compute the stock price at each node (Mathis)
   \item link number of nodes to numbre of periods 1+t (Juliette) DONE 
 \end{itemize}
-At each period $t$, a recombining tree has $t+1$ distinct price nodes.
-At $t=25$, this gives 26 distinct prices. However, since the Asian
-option payoff depends on the arithmetic average $\bar{S}_n$, two paths
-reaching the same final price can yield different payoffs. We therefore
-track all $2^{25} \approx 33$ million paths separately, even though
-they converge to only 26 distinct prices at maturity.
+At each period $t$, a recombining tree has $t+1$ distinct price nodes. 
+At $t=25$, this gives 26 distinct prices. However, since the Asian 
+option payoff depends on the arithmetic average $\bar{S}_n$, known 
+as the floating strike, two paths reaching the same final price can 
+yield different payoffs. We therefore track all $2^{25} \approx 33$ 
+million paths separately, even though they converge to only 26 distinct 
+prices at maturity. To differentiate between paths, we store the 
+cumulative sum $C_t$ at each node, which allows us to compute a distinct 
+average $\bar{S}_n$ for each path.
 
 
 
@@ -221,12 +226,12 @@ $\bar{S}_n = C_{25}/26$.
   \item add formula (Andrea)
   \item Explain how we got these results (Juliette)
 \end{itemize}
-For each terminal node ($t=25$), we already have the final price
-$S_{25}$ and the arithmetic average $\bar{S}_n$ computed in the
-previous step. The option payoff is then $A_T = \max(S_{25} -
-\bar{S}_n, 0)$. If the final price exceeds the average, the option
-has value. Otherwise, the option expires worthless and the payoff
-is zero.o
+For each terminal node ($t=25$), we already have the final price 
+$S_{25}$ and the arithmetic average $\bar{S}_n$ computed in the 
+previous step. The option payoff is then $A_T = \max(S_{25} - 
+\bar{S}_n, 0)$. If the final price exceeds the average, the option 
+has a strictly positive value $A_T > 0$. Otherwise, the option expires 
+worthless and the payoff is zero.
 \begin{itemize}
   \item Tree picture (With the payoff at the terminal nodes) (Mathis) DONE
   \item Stats (done by Juliette)
@@ -262,7 +267,7 @@ computed at the terminal nodes of the binomial tree ($t = 25$).
   \label{tab:stats_V}
 \end{table}
 
-The distribution of $A_T$ is highly right-skewed: the median is zero, meaning more than half 
+The distribution of $A_T$ is right-skewed: the median is zero, meaning more than half 
 of all terminal paths yield a worthless option, i.e. $S_n < \bar{S}_n$. Notably, the standard 
 deviation (24.71) exceeds the mean (15.71), reflecting the high dispersion of payoffs. Most 
 paths expire worthless while a small number of highly favourable paths drive the mean upward. 
@@ -305,18 +310,26 @@ period.
   \item show result of q (Erwan)
   \item Distribution of the payoff under q vs p (Juliette)
 \end{itemize}
-Both $p$ and $q$ represent the probability of an up-move, but they
-differ in nature. $p = 0.5$ is the physical probability assumed by
-the model, meaning Apple has equal chances of going up or down.
-$q \approx 0.491$ is the risk-neutral probability, derived from the
-no-arbitrage condition. It does not depend on $p$, but on $r$
-and $\sigma$.
+Figure~\ref{fig:distribution_q} displays the risk-neutral distribution 
+of up moves over $n = 25$ steps, approximated by a normal distribution 
+with mean $\mu_q = nq$ and variance $\sigma_q^2 = nq(1-q)$.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{graphs/distribution_q.pdf}
+    \caption{Risk-Neutral Distribution of Up Moves ($n = 25$ steps, AAPL)}
+    \label{fig:distribution_q}
+\end{figure}
+$q \approx 0.491$ is the risk-neutral probability derived from the 
+no-arbitrage condition, depending on $r$ and $\sigma$ rather than 
+historical returns. Unlike the physical probability $p$, which describes 
+the actual likelihood of an up-move, $q$ is a mathematical construct 
+used to price derivatives consistently with no-arbitrage. The fact that 
+$q < p$ is therefore expected.
 
-The two distributions are very similar because $r = 1\%$ is small.
-If $r$ were higher, $q$ would be further from $0.5$ and the two
-distributions would differ more. The fact that $q < p$ means that
-under the risk-neutral measure, the stock has slightly less chance
-of going up than in the real world.
+Comparing skewness and kurtosis between the two is not straightforward, 
+as differences in these moments capture not only beliefs about tail risks 
+but also their pricing. With a skewness of $0.007$ and excess kurtosis 
+of $-0.080$, the distribution of $q$ is nearly symmetric and close to normal.
 
 \begin{table}[H]
   \centering
@@ -583,13 +596,19 @@ Our model relies on several simplifying assumptions that open the
 door to possible extensions. First, increasing the number of periods
 $n$ would yield a more accurate price. With $n=25$, the result is
 an approximation and the larger $n$, the more $V_0$ converges to the
-true value. Second, extending the maturity beyond 6 months would
-allow us to analyse how the option price evolves over time. Finally,
-using a stochastic volatility instead of a constant $\sigma$ would
-better reflect Apple's real behaviour. However, this extension is
-computationally demanding in our case, as the path-dependency of
-the Asian option combined with a time-varying volatility would cause
-the tree to grow exponentially.
+true value. However, this comes at a computational cost: the number 
+of paths grows as $2^n$, which becomes very large very fast. Second, 
+extending the maturity beyond $T = 0.5$ years would allow us to study 
+how the option price depends on the time horizon, and whether longer 
+maturities lead to significantly different prices. Finally, using a 
+time-varying volatility instead of a constant $\sigma$ would better 
+reflect Apple's real behaviour, and would allow us to capture the 
+volatility skew and smile observed in Black-Scholes implied volatilities. 
+However, this extension is computationally demanding in our case, as the 
+path-dependency of the Asian option combined with a time-varying 
+volatility would cause the tree to grow exponentially, as the number 
+of nodes would scale as $2^n$ instead of $n+1$.
+
 \begin{itemize}
   \item final remarks (Erwan)
 \end{itemize}
