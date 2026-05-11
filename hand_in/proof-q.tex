@@ -8,8 +8,32 @@
 
 \begin{document}
 
-\section{Proving Q}
+\section{Risk-Neutral}
+To price the European floating-strike Asian call option, we cannot directly use the 
+real world probability $p$, the true likelihood of an up or down move, because 
+pricing under $\mathbb{P}$ would require knowing investors' risk preferences, which is not possible. 
+Instead, we work with the \textit{risk-neutral probability} $q$, an artificial 
+probability measure under which all assets earn the risk-free rate $r$ in 
+expectation. Specifically, $q$ is constructed so that the discounted stock price 
+is a martingale:
+\[
+    \mathbb{E}^{(q)}\!\left[\frac{S_1}{1+r}\right] = S_0,
+\]
+which means the stock offers no expected excess return under $\mathbb{Q}$. 
+This martingale property is central to our project: it allows us to price the 
+option as a discounted expectation under $\mathbb{Q}$,
+\[
+    V_0 = \frac{1}{(1+r)}\,\mathbb{E}^{(q)}[V_1],
+\]
+without specifying any utility function or risk premium. In the remainder of 
+this section, we first derive the formula for $q$ from first principles using 
+the no-arbitrage replicating portfolio argument covered in lecture, examine how 
+$q$ depends on the volatility parameters $u$, $d$ and the interest rate $r$, 
+and then apply it to compute the risk-neutral probabilities for Apple's 
+binomial tree.
+\vspace{1em}
 
+\section{Proving Q}
 \noindent To derive the risk-neutral probability $q$, we consider an investor who allocates 
 wealth between the stock $S$ and the bond $B$ by choosing a portfolio 
 $H = (\alpha, \beta)$. The portfolio value at $t=1$ is:
