@@ -45,23 +45,34 @@ fig, ax = plt.subplots(figsize=(10, 5))
 fig.patch.set_facecolor("white")
 ax.set_facecolor("white")
 
-COLOR_Q = "#2980B9"
+COLOR_Q    = "#4C72B0"   # bleu
+COLOR_MEAN = "#E07B39"   # orange
 
 ax.plot(x_cont, pdf_q, color=COLOR_Q, lw=2, label=f"Risk-neutral probability  $q = {q:.3f}$")
 ax.fill_between(x_cont, pdf_q, alpha=0.12, color=COLOR_Q)
-ax.axvline(mu_q, color=COLOR_Q, linestyle="--", lw=1, alpha=0.7, label=f"Mean $= {mu_q:.2f}$")
+ax.axvline(mu_q, color=COLOR_MEAN, linestyle="--", lw=1.5, label=f"Mean $= {mu_q:.2f}$")
+
+# Grille en arrière-plan
+ax.set_axisbelow(True)
+ax.grid(True, color="lightgrey", linestyle="-", linewidth=0.7, alpha=0.8)
 
 stats_text = (
     f"Skewness $= {skew_q:.3f}$\n"
     f"Excess kurtosis $= {kurt_q:.3f}$"
 )
+
 ax.text(
     0.97, 0.95, stats_text,
     transform=ax.transAxes,
     fontsize=9,
     verticalalignment="top",
     horizontalalignment="right",
-    bbox=dict(boxstyle="round,pad=0.4", facecolor="#EBF5FB", edgecolor="#2980B9", alpha=0.8),
+    bbox=dict(
+        boxstyle="square,pad=0.4",
+        facecolor="white",
+        edgecolor="#333333",
+        alpha=1
+    ),
     color="#1a1a1a",
 )
 
@@ -71,7 +82,7 @@ ax.set_title(
 )
 ax.set_xlabel("Number of up moves", fontsize=10)
 ax.set_ylabel("Probability density", fontsize=10)
-ax.legend(frameon=False, fontsize=9)
+ax.legend(frameon=True, framealpha=1, edgecolor="#cccccc", fontsize=9)
 
 plt.tight_layout()
 plt.savefig("distribution_q.png", dpi=200, bbox_inches="tight", facecolor="white")
