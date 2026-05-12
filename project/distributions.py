@@ -47,63 +47,62 @@ def normal_pdf(x: float, mu: float, sigma: float) -> float:
     return (1 / sqrt(2 * pi * sigma**2)) * exp(-((x - mu) ** 2) / (2 * sigma**2))
 
 
-<<<<<<< feat/juju-changes-needed
-x_cont = np.linspace(0, n, 500)
-pdf_q = [normal_pdf(x, mu_q, sigma_q) for x in x_cont]
+# x_cont = np.linspace(0, n, 500)
+# pdf_q = [normal_pdf(x, mu_q, sigma_q) for x in x_cont]
 
-plt.rcParams.update({
-    "font.family": "serif",
-    "axes.spines.top": False,
-    "axes.spines.right": False,
-})
+# plt.rcParams.update({
+#     "font.family": "serif",
+#     "axes.spines.top": False,
+#     "axes.spines.right": False,
+# })
 
-fig, ax = plt.subplots(figsize=(10, 5))
-fig.patch.set_facecolor("white")
-ax.set_facecolor("white")
+# fig, ax = plt.subplots(figsize=(10, 5))
+# fig.patch.set_facecolor("white")
+# ax.set_facecolor("white")
 
-COLOR_Q    = "#4C72B0"   # bleu
-COLOR_MEAN = "#E07B39"   # orange
+# COLOR_Q    = "#4C72B0"   # bleu
+# COLOR_MEAN = "#E07B39"   # orange
 
-ax.plot(x_cont, pdf_q, color=COLOR_Q, lw=2, label=f"Risk-neutral probability  $q = {q:.3f}$")
-ax.fill_between(x_cont, pdf_q, alpha=0.12, color=COLOR_Q)
-ax.axvline(mu_q, color=COLOR_MEAN, linestyle="--", lw=1.5, label=f"Mean $= {mu_q:.2f}$")
+# ax.plot(x_cont, pdf_q, color=COLOR_Q, lw=2, label=f"Risk-neutral probability  $q = {q:.3f}$")
+# ax.fill_between(x_cont, pdf_q, alpha=0.12, color=COLOR_Q)
+# ax.axvline(mu_q, color=COLOR_MEAN, linestyle="--", lw=1.5, label=f"Mean $= {mu_q:.2f}$")
 
-# Grille en arrière-plan
-ax.set_axisbelow(True)
-ax.grid(True, color="lightgrey", linestyle="-", linewidth=0.7, alpha=0.8)
+# # Grille en arrière-plan
+# ax.set_axisbelow(True)
+# ax.grid(True, color="lightgrey", linestyle="-", linewidth=0.7, alpha=0.8)
 
-stats_text = (
-    f"Skewness $= {skew_q:.3f}$\n"
-    f"Excess kurtosis $= {kurt_q:.3f}$"
-)
+# stats_text = (
+#     f"Skewness $= {skew_q:.3f}$\n"
+#     f"Excess kurtosis $= {kurt_q:.3f}$"
+# )
 
-ax.text(
-    0.97, 0.95, stats_text,
-    transform=ax.transAxes,
-    fontsize=9,
-    verticalalignment="top",
-    horizontalalignment="right",
-    bbox=dict(
-        boxstyle="square,pad=0.4",
-        facecolor="white",
-        edgecolor="#333333",
-        alpha=1
-    ),
-    color="#1a1a1a",
-)
+# ax.text(
+#     0.97, 0.95, stats_text,
+#     transform=ax.transAxes,
+#     fontsize=9,
+#     verticalalignment="top",
+#     horizontalalignment="right",
+#     bbox=dict(
+#         boxstyle="square,pad=0.4",
+#         facecolor="white",
+#         edgecolor="#333333",
+#         alpha=1
+#     ),
+#     color="#1a1a1a",
+# )
 
-ax.set_title(
-    "Risk-Neutral Distribution of Up Moves  ($n = 25$ steps, AAPL)",
-    fontsize=12, pad=12,
-)
-ax.set_xlabel("Number of up moves", fontsize=10)
-ax.set_ylabel("Probability density", fontsize=10)
-ax.legend(frameon=True, framealpha=1, edgecolor="#cccccc", fontsize=9)
+# ax.set_title(
+#     "Risk-Neutral Distribution of Up Moves  ($n = 25$ steps, AAPL)",
+#     fontsize=12, pad=12,
+# )
+# ax.set_xlabel("Number of up moves", fontsize=10)
+# ax.set_ylabel("Probability density", fontsize=10)
+# ax.legend(frameon=True, framealpha=1, edgecolor="#cccccc", fontsize=9)
 
-plt.tight_layout()
-plt.savefig("distribution_q.png", dpi=200, bbox_inches="tight", facecolor="white")
-plt.show()
-=======
+# plt.tight_layout()
+# plt.savefig("distribution_q.png", dpi=200, bbox_inches="tight", facecolor="white")
+# plt.show()
+
 def binomial_pmf(k: int, n: int, q: float) -> float:
     return float(comb(n, k) * (q**k) * ((1 - q) ** (n - k)))
 
@@ -236,4 +235,3 @@ if __name__ == "__main__":
     outputs = plot_risk_neutral_up_moves_distribution()
     print(outputs["png"])
     print(outputs["pdf"])
->>>>>>> main
