@@ -1,15 +1,22 @@
-\documentclass[12pt]{article}
+\documentclass[12pt, a4paper]{article}
+
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{geometry}
 \usepackage{ulem}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{colortbl}
 
 \geometry{margin=2.5cm}
 
 \begin{document}
 
-\section{Risk-Neutral}
-To price the European floating-strike Asian call option, we cannot directly use the 
+\section{Risk-Neutral Probabilities}
+\label{sec:riskneutral}
+
+To price the call option, we cannot directly use the 
 real world probability $p$, the true likelihood of an up or down move, because 
 pricing under $\mathbb{P}$ would require knowing investors' risk preferences, which is not possible. 
 Instead, we work with the \textit{risk-neutral probability} $q$, an artificial 
@@ -17,13 +24,13 @@ probability measure under which all assets earn the risk-free rate $r$ in
 expectation. Specifically, $q$ is constructed so that the discounted stock price 
 is a martingale:
 \[
-    \mathbb{E}^{(q)}\!\left[\frac{S_1}{1+r}\right] = S_0,
+    \mathbb{E}_{\mathbb{Q}}\!\left[\frac{S_1}{1+r}\right] = S_0,
 \]
 which means the stock offers no expected excess return under $\mathbb{Q}$. 
 This martingale property is central to our project: it allows us to price the 
 option as a discounted expectation under $\mathbb{Q}$,
 \[
-    V_0 = \frac{1}{(1+r)}\,\mathbb{E}^{(q)}[V_1],
+    V_0 = \frac{1}{(1+r)}\,\mathbb{E}_{\mathbb{Q}}[V_1],
 \]
 without specifying any utility function or risk premium. In the remainder of 
 this section, we first derive the formula for $q$ from first principles using 
@@ -33,7 +40,9 @@ and then apply it to compute the risk-neutral probabilities for Apple's
 binomial tree.
 \vspace{1em}
 
-\section{Proving Q}
+\subsection{Proving the formula of Q}
+-> AJOUTER SINGLE PERIOD MODEL + SELF FINANCING
+
 \noindent To derive the risk-neutral probability $q$, we consider an investor who allocates 
 wealth between the stock $S$ and the bond $B$ by choosing a portfolio 
 $H = (\alpha, \beta)$. The portfolio value at $t=1$ is:
@@ -50,29 +59,28 @@ V_1 = \alpha S_1 + \beta \cdot B_1 =
 \]
 \vspace{1em}
 
-\noindent The investor maximises expected utility $\mathbb{E}^P[u(V_1)]$ subject to the budget 
-constraint $\alpha S_0 + \beta B_0 = V_0$. We show that the first-order conditions 
-uniquely pin down a probability measure $q$ (the \textbf{risk-neutral probability}) under which all assets earn the risk-free rate $r$.
+\noindent The investor maximises expected utility $\mathbb{E}_{\mathbb{P}}[u(V_1)]$ subject to the budget 
+constraint $\alpha S_0 + \beta B_0 = V_0$. 
+-> FIX ISSUE FORMATING
 
-\vspace{2.5em}
+\vspace{2em}
 
 \noindent \uline{The investor's optimisation problem is thus:}
 
 \[
-\max_{\alpha,\, \beta} \; \mathbb{E}^P\left[u\!\left(\alpha S_1 + \beta \cdot B_1\right)\right]
+\max_{\alpha,\, \beta} \; \mathbb{E}_{\mathbb{P}}\left[u\!\left(\alpha S_1 + \beta \cdot B_1\right)\right]
 \quad \text{s.t.} \quad
 \alpha S_0 + \beta B_0 = V_0
 \]
 \vspace{0.1em}
 
 \noindent {\small where the constraint states that the cost of the portfolio today equals
-initial wealth $V_0$. Since the constraint is an equality, we maximise
-using the Lagrangian:}
+initial wealth $V_0$. We maximise using the Lagrangian.}
 \vspace{0.1em}
 
 \begin{align*}
 \mathcal{L}(\alpha, \beta, \lambda)
-  &= \mathbb{E}^P\left[u\!\left(\alpha S_1 + \beta B_1\right)\right]
+  &= \mathbb{E}_{\mathbb{P}}\left[u\!\left(\alpha S_1 + \beta B_1\right)\right]
      - \lambda\!\left(\alpha S_0 + \beta B_0 - V_0\right) \\[6pt]
   &= p \cdot u(X_{\text{up}}) + (1-p) \cdot u(X_{\text{down}})
      - \lambda\!\left(\alpha S_0 + \beta B_0 - V_0\right) \\[6pt]
@@ -89,13 +97,12 @@ using the Lagrangian:}
   &= p \cdot u'(X_{\text{up}}) \cdot S_0 \cdot u + (1-p) \cdot u'(X_{\text{down}}) \cdot S_0 \cdot d
      - \lambda \cdot S_0 = 0
   \\[4pt]
-  &= \mathbb{E}^P\left[u'(V_1) \cdot S_1\right] = \lambda S_0
+  &= \mathbb{E}_{\mathbb{P}}\left[u'(V_1) \cdot S_1\right] = \lambda S_0
 \end{align*}
 
 \noindent {\small Isolating $S_0$:}
 \[
-\longrightarrow \quad
-S_0 = \frac{1}{\lambda} \cdot \mathbb{E}^P\left[u'(V_1) \cdot S_1\right]
+S_0 = \frac{1}{\lambda} \cdot \mathbb{E}_{\mathbb{P}}\left[u'(V_1) \cdot S_1\right]
 \tag{I}
 \]
 
@@ -106,13 +113,12 @@ S_0 = \frac{1}{\lambda} \cdot \mathbb{E}^P\left[u'(V_1) \cdot S_1\right]
   &= p \cdot u'(X_{\text{up}}) \cdot B_1 + (1-p) \cdot u'(X_{\text{down}}) \cdot B_1
      - \lambda \cdot B_0 = 0
   \\[4pt]
-  &= \mathbb{E}^P\left[u'(V_1) \cdot B_1\right] = \lambda B_0
+  &= \mathbb{E}_{\mathbb{P}}\left[u'(V_1) \cdot B_1\right] = \lambda B_0
 \end{align*} 
 
 \noindent {\small Isolating $\lambda$:}
 \[
-\longrightarrow \quad
-\lambda = \frac{\mathbb{E}^P\left[u'(V_1) \cdot B_1\right]}{B_0}
+\lambda = \frac{\mathbb{E}_{\mathbb{P}}\left[u'(V_1) \cdot B_1\right]}{B_0}
 \tag{II}
 \]
 
@@ -121,25 +127,25 @@ and $B_1 = (1+r)$ (grows at the risk-free rate):
 
 \[
 \frac{1}{\lambda}
-  = \frac{1}{(1+r) \cdot \mathbb{E}^P\left[u'(V_1)\right]}
+  = \frac{1}{(1+r) \cdot \mathbb{E}_{\mathbb{P}}\left[u'(V_1)\right]}
 \]
 \vspace{0.1em}
 
 \noindent {\small Substituting this expression for $\frac{1}{\lambda}$ into (I):}
 \begin{align*}
 S_0
-  &= \frac{1}{1+r} \cdot \frac{\mathbb{E}^P\left[u'(V_1) \cdot S_1\right]}{\mathbb{E}^P\left[u'(V_1)\right]}
+  &= \frac{1}{1+r} \cdot \frac{\mathbb{E}_{\mathbb{P}}\left[u'(V_1) \cdot S_1\right]}{\mathbb{E}_{\mathbb{P}}\left[u'(V_1)\right]}
   \tag{III} \\[4pt]
 \end{align*}
 
-\noindent \textbf{\underline{We define the variable $Z$}}, which represents the marginal utility of $V_1$ divided by the
+\noindent We define the variable $Z$, which represents the marginal utility of $V_1$ divided by the
 expected value of the marginal utility of $V_1$:
 \[
-Z = \frac{u'(V_1)}{E^P\!\left[u'(V_1)\right]}
+Z := \frac{u'(V_1)}{\mathbb{E}_{\mathbb{P}}\!\left[u'(V_1)\right]}
 \]
 \vspace{0.5em}
 
-\noindent Since $V_1$ takes two values in the binomial model, 
+\noindent Since $V_1$ cant take two values in the binomial model, 
 $Z$ takes two values accordingly:
 \[
 Z_{\text{up}} =
@@ -153,7 +159,7 @@ Z_{\text{down}} =
 
 \vspace{1.5em}
 
-\noindent\uline{$Z$ satisfies two properties:}
+\noindent $Z$ satisfies two properties:
 
 \begin{enumerate}
   \item Since utility is increasing, $u'(V_1) > 0$, so $Z > 0$ 
@@ -163,9 +169,9 @@ Z_{\text{down}} =
 
   \item The expected value of $Z$ is equal to 1 by construction:
         \[
-          E^P[Z]
-          = E^P\!\left[\frac{u'(V_1)}{E^P\!\left[u'(V_1)\right]}\right]
-          = \frac{E^P\!\left[u'(V_1)\right]}{E^P\!\left[u'(V_1)\right]}
+          \mathbb{E}_{\mathbb{P}}[Z]
+          = \mathbb{E}_{\mathbb{P}}\!\left[\frac{u'(V_1)}{\mathbb{E}_{\mathbb{P}}\!\left[u'(V_1)\right]}\right]
+          = \frac{\mathbb{E}_{\mathbb{P}}\!\left[u'(V_1)\right]}{\mathbb{E}_{\mathbb{P}}\!\left[u'(V_1)\right]}
           = 1
         \]
 \end{enumerate}
@@ -174,17 +180,17 @@ Z_{\text{down}} =
 
 \noindent {\small Using the two properties of $Z$, we can rewrite equation (III) as:}
 \[
-S_0 = \frac{1}{1+r} \cdot \mathbb{E}^P\!\left[Z \cdot S_1\right]
+S_0 = \frac{1}{1+r} \cdot \mathbb{E}_{\mathbb{P}}\!\left[Z \cdot S_1\right]
 \]
 
-\noindent {\small Expanding $\mathbb{E}^P[Z \cdot S_1]$ explicitly in the 
+\noindent {\small Expanding $\mathbb{E}_{\mathbb{P}}[Z \cdot S_1]$ explicitly in the 
 binomial model, where $S_1 = S_0 u$ in the up state and $S_1 = S_0 d$ 
 in the down state:}
 \begin{align*}
- & \mathbb{E}^P\!\left[Z \cdot S_1\right] 
+ & \mathbb{E}_{\mathbb{P}}\!\left[Z \cdot S_1\right] 
   = p \cdot Z_{\text{up}} \cdot S_0 \cdot u + (1-p) \cdot Z_{\text{down}} \cdot S_0 \cdot d \\[0.5pt]
 \\[-8pt]
-\longrightarrow \quad & S_0 = \frac{1}{1+r} \cdot \left( p \cdot Z_{\text{up}} \cdot S_0 \cdot u + (1-p) \cdot Z_{\text{down}} \cdot S_0 \cdot d \right)
+& S_0 = \frac{1}{1+r} \cdot \left( p \cdot Z_{\text{up}} \cdot S_0 \cdot u + (1-p) \cdot Z_{\text{down}} \cdot S_0 \cdot d \right)
 \end{align*}
 \vspace{1em}
 
@@ -197,10 +203,10 @@ in the down state:}
 \noindent We define $q$ and $(1-q)$ as the real-world probability reweighted by how much the investor values a dollar in that state, which makes the investor indifferent between the stock and the risk-free bond:
 \[
 q = p \cdot Z_{\text{up}}
-  = p \cdot \frac{u'(X_{\text{up}})}{E\!\left[u'(V_1)\right]}
+  = p \cdot \frac{u'(X_{\text{up}})}{\mathbb{E}_{\mathbb{P}}\!\left[u'(V_1)\right]}
 \qquad \text{and} \qquad
 1-q = (1-p) \cdot Z_{\text{down}}
-       = (1-p) \cdot \frac{u'(X_{\text{down}})}{E\!\left[u'(V_1)\right]}
+       = (1-p) \cdot \frac{u'(X_{\text{down}})}{\mathbb{E}_{\mathbb{P}}\!\left[u'(V_1)\right]}
 \]
 
 \vspace{1em}
@@ -210,7 +216,7 @@ are strictly positive (since $Z > 0$, $p \in (0,1)$), and they sum to 1:
 \[
 q + (1-q) 
   = p \cdot Z_{\text{up}} + (1-p) \cdot Z_{\text{down}} 
-  = \mathbb{E}^P[Z] = 1 \quad 
+  = \mathbb{E}_{\mathbb{P}}[Z] = 1 \quad 
 \]
 \vspace{0.1em}
 
@@ -225,7 +231,103 @@ q + (1-q)
 \]
 \vspace{1em}
 
-\noindent This is the \textbf{risk-neutral probability}: the unique 
-value of $q$ consistent with no-arbitrage, independent of any investor's 
-preferences. 
+\noindent This is the risk-neutral probability: the unique value of $q$ consistent with no-arbitrage, independent of any investor's preferences. 
+\vspace{1em}
+
+\noindent Now, we apply the formula in coutinuous time to compute q:
+
+\begin{equation}
+  u = e^{\sigma \sqrt{\Delta t}} \approx 1.045,
+  \qquad
+  d = e^{-\sigma \sqrt{\Delta t}} \approx 0.9567.
+  \label{eq:up and down}
+\end{equation}
+
+Therefore:
+\[
+q=\frac{e^{r\Delta t}-d}{u-d} = \frac{(e^{0.01 \Delta t}) - 0.9567}{1.045 - 0.9567} \approx 0.491
+\]
+\vspace{1em}
+
+
+\subsection{Relation with volatility and interest rate}
+
+\noindent With the CRR parameterization $u = e^{\sigma\sqrt{\Delta t}}$ and $d = e^{-\sigma\sqrt{\Delta t}}$, the
+risk-neutral probability $q = \frac{1+r-d}{u-d}$ depends on both the risk-free rate $r$ and the
+volatility $\sigma$. Taking partial derivatives:
+\begin{align*}
+\frac{\partial q}{\partial r} &= \frac{1}{u-d} > 0 \\[6pt]
+\frac{\partial q}{\partial \sigma} &= \frac{\sqrt{\Delta t}\left[2 - (1+r)(u+d)\right]}{(u-d)^2} < 0
+\end{align*}
+
+\noindent The first derivative is strictly positive: a higher risk-free rate increases $q$, since the
+bond grows faster and the risk-neutral measure must assign more weight to the up state to
+enforce $\mathbb{E}^Q[S_1] = (1+r)S_0$.
+\vspace{0.5em}
+
+\noindent The second derivative is strictly negative. Since $ud = e^{\sigma\sqrt{\Delta t}} \cdot
+e^{-\sigma\sqrt{\Delta t}} = 1$, the AM-GM inequality\footnote{The AM-GM inequality states
+that for any $u, d > 0$: $\frac{u+d}{2} \geq \sqrt{ud}$, with equality iff $u = d$.} gives
+$u + d \geq 2\sqrt{ud} = 2$. Combined with $1+r > 1$, we get $(1+r)(u+d) > 2$, so the
+numerator $2 - (1+r)(u+d) < 0$. Higher volatility widens the spread $u - d$, so the
+denominator grows faster than the numerator, and $q$ decreases. When moves are
+more extreme, the up state needs less risk-neutral probability to still price assets correctly.
+\vspace{1em}
+
+\noindent We can see the sensitivity of both factor in the following table.
+\vspace{0.1em}
+
+
+
+\begin{table}[H]
+  \centering
+  \caption{Sensitivity of the risk-neutral probability \(q\) to interest rates and volatilities.}
+  \label{tab:sensitivity_rates_volatility}
+
+  \small
+  \setlength{\tabcolsep}{6pt}
+  \renewcommand{\arraystretch}{1.15}
+
+  \begin{tabular}{lrrr>{\columncolor{gray!10}}rrr}
+    \toprule
+    \textbf{Interest rate}
+    & \multicolumn{6}{c}{\textbf{Volatility}} \\
+    \cmidrule(lr){2-7}
+    & {\textbf{0.20}}
+    & {\textbf{0.25}}
+    & {\textbf{0.30}}
+    & {\cellcolor{gray!10}\textbf{0.3130}}
+    & {\textbf{0.35}}
+    & {\textbf{0.40}} \\
+    \midrule
+    0.0000 & 0.492929 & 0.491162 & 0.489395 & 0.488934 & 0.487628 & 0.485862 \\
+    0.0025 & 0.493813 & 0.491869 & 0.489984 & 0.489499 & 0.488133 & 0.486303 \\
+    0.0050 & 0.494697 & 0.492576 & 0.490573 & 0.490064 & 0.488638 & 0.486745 \\
+    0.0075 & 0.495581 & 0.493283 & 0.491162 & 0.490628 & 0.489143 & 0.487187 \\
+
+    \rowcolor{gray!10}
+    \textbf{0.0100}
+    & 0.496465
+    & 0.493990
+    & 0.491752
+    & \cellcolor{gray!25}\textbf{0.491193}
+    & 0.489648
+    & 0.487629 \\
+
+    0.0125 & 0.497349 & 0.494697 & 0.492341 & 0.491758 & 0.490153 & 0.488070 \\
+    0.0150 & 0.498233 & 0.495404 & 0.492930 & 0.492322 & 0.490658 & 0.488512 \\
+    0.0175 & 0.499117 & 0.496112 & 0.493519 & 0.492887 & 0.491163 & 0.488954 \\
+    0.0200 & 0.500001 & 0.496819 & 0.494109 & 0.493452 & 0.491668 & 0.489396 \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{2mm}
+  \begin{minipage}{0.92\textwidth}
+    \footnotesize
+    \textit{Note.} The highlighted cell corresponds to the actual parameter combination,
+    \(r = 0.0100\) and \(\sigma = 0.3130\).
+  \end{minipage}
+\end{table}
+
+
 \end{document}
