@@ -78,7 +78,7 @@
 
   {\large \textbf{Group members:} \par}
   \vspace{0.5cm}
-  Juliette Binz  \\[0.3cm]
+  Juliette Binz \\[0.3cm]
   Andrea Cimoli \\[0.3cm]
   Mathis Clement \\[0.3cm]
   Erwan Rollin
@@ -163,19 +163,16 @@ The first three steps of the tree are illustrated in Figure~\ref{fig:tree}.
   \label{fig:tree}
 \end{figure}
 
-In order to compute the prices at different time in the tree in Figure~\ref{fig:tree},
+In order to compute the prices at different point in,
 we need to multiply the price at the privious node by $u$ (up move) or $d$ (down move).
 The tree then extends upwards after an up move and downwards after a down move.
 
 At each period $t$, a recombining tree has $t+1$ distinct price nodes. 
-At $t=25$, this gives 26 distinct prices. However, since the Asian 
-option payoff depends on the arithmetic average $\bar{S}_n$, known 
-as the floating strike, two paths reaching the same final price can 
-yield different payoffs. We therefore track all $2^{25} \approx 33$ 
-million paths separately, even though they converge to only 26 distinct 
-prices at maturity. To differentiate between paths, we store the 
-cumulative sum $C_t$ at each node, which allows us to compute a distinct 
-average $\bar{S}_n$ for each path.
+At $t=25$, this gives 26 distinct prices. However, since the Asian
+option payoff depends on the arithmetic average $\bar{S}_T$, two paths
+reaching the same final price can yield different payoffs. We therefore
+track all $2^{25} \approx 33$ million paths separately by storing the
+cumulative sum $C_t$ at each node.
 
 \newpage
 
@@ -261,9 +258,9 @@ terminal price alone.
 
 
 For each terminal node ($t=25$), we already have the final price 
-$S_{25}$ and the arithmetic average $\bar{S}_n$ computed in the 
-previous step. The option payoff is then $A_T = \max(S_{25} - 
-\bar{S}_n, 0)$. If the final price exceeds the average, the option 
+$S_{25}$ and the arithmetic average $\bar{S}_T$ computed in the 
+previous step. The option payoff is then $A_T = (S_{25} - 
+\bar{S}_T)^+$. If the final price exceeds the average, the option 
 has a strictly positive value $A_T > 0$. Otherwise, the option expires 
 worthless and the payoff is zero.
 
@@ -274,7 +271,7 @@ worthless and the payoff is zero.
   \label{fig:tree_payoff}
 \end{figure}
 
-Table~\ref{tab:stats_V} reports descriptive statistics of the payoff $A_T = \max(S_n - \bar{S}_n, 0)$ 
+Table~\ref{tab:stats_V} reports descriptive statistics of the payoff $A_T = (S_n - \bar{S}_n)^+$ 
 computed at the terminal nodes of the binomial tree ($t = 25$).
 
 \begin{table}[H]
@@ -288,7 +285,7 @@ computed at the terminal nodes of the binomial tree ($t = 25$).
 
   \begin{tabular}{lr}
     \toprule
-    \textbf{Statistic} & \textbf{Value (\$)} \\
+    \textbf{Statistic} & \textbf{Value} \\
     \midrule
     Count     & $3.36 \times 10^7$ \\
     Mean      & 15.71 \\
@@ -303,11 +300,13 @@ computed at the terminal nodes of the binomial tree ($t = 25$).
 \end{table}
 
 The distribution of $A_T$ is right-skewed: the median is zero, meaning more than half 
-of all terminal paths yield a worthless option, i.e. $S_n < \bar{S}_n$. Notably, the standard 
-deviation (24.71) exceeds the mean (15.71), reflecting the high dispersion of payoffs as shown in Table~\ref{tab:stats_V}. Most 
-paths expire worthless while a small number of highly favourable paths drive the mean upward. 
-The maximum payoff of 321.58 corresponds to the path where the stock price increases at every 
-period i.e. $270 \times u^{25} = 321.58$.
+of all terminal paths yield a worthless option, i.e. $S_n < \bar{S}_n$, as shown in 
+Figure~\ref{fig:four_images}. Notably, the standard deviation (24.71) exceeds the mean 
+(15.71), reflecting the high dispersion of payoffs, as shown in Table~\ref{tab:stats_V}. 
+Most paths expire worthless while a small number of highly favourable paths drive the mean 
+upward. The maximum payoff of 321.58 corresponds to the path where the stock price increases 
+at every period, i.e. $270 \cdot u^{25} = 321.58$.
+
 \begin{itemize}
   \item Description and interpretation of the payoff distribution (Andrea)
 \end{itemize}
@@ -575,17 +574,18 @@ with mean $\mu_q = nq$ and variance $\sigma_q^2 = nq(1-q)$.
     \caption{Risk-Neutral Distribution of Up Moves ($n = 25$ steps, AAPL)}
     \label{fig:distribution_q}
 \end{figure}
-$q \approx 0.491$ is the risk-neutral probability derived from the 
-no-arbitrage condition, depending on $r$ and $\sigma$ rather than 
+The risk-neutral probability $q \approx 0.491$, derived from the 
+no-arbitrage condition as shown above, depends on $r$ and $\sigma$ rather than 
 historical returns. Unlike the physical probability $p$, which describes 
-the actual likelihood of an up-move, $q$ is a mathematical construct 
-used to price derivatives consistently with no-arbitrage. The fact that 
-$q < p$ is therefore expected.
+the actual likelihood of an up-move, $q$ is a mathematical construct. 
+Since $r < \mu$ under typical market conditions, the risk-neutral 
+probability discounts the upward drift, making $q < p$ as expected.
 
 Comparing skewness and kurtosis between the two is not straightforward, 
 as differences in these moments capture not only beliefs about tail risks 
 but also their pricing. With a skewness of $0.007$ and excess kurtosis 
-of $-0.080$, the distribution of $q$ is nearly symmetric and close to normal.
+of $-0.080$, the distribution of $q$ is nearly symmetric and close to 
+normal, as shown in Figure~\ref{fig:distribution_q}.
 
 \begin{table}[H]
   \centering
@@ -935,10 +935,7 @@ more steps. The model then converges toward a stable value, and beyond a
 certain point, increasing $n$ only has a very limited impact on the 
 result.
 
-
-Second, extending the maturity beyond $T = 0.5$ years would allow us to study 
-how the option price depends on the time horizon, and whether longer 
-maturities lead to significantly different prices. Finally, using a 
+Finally, using a 
 time-varying volatility instead of a constant $\sigma$ would better 
 reflect Apple's real behaviour, and would allow us to capture the 
 volatility skew and smile observed in Black-Scholes implied volatilities. 
