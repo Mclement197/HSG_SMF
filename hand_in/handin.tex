@@ -129,6 +129,8 @@ $p = 0.5$. Both factors are calibrated using the volatility $\sigma$
 estimated from Apple's daily log-returns over 2020--2026, using a 
 historical method.
 
+\subsection{CRR Parametrization}
+
 The size of the up and down moves is determined by the annualized volatility 
 \(\sigma\) (annualized using $\sqrt{250}$) and by the length of one time step \(\Delta t = T/n\). 
 Using the Cox-Ross-Rubinstein parametrization, the up and down factors are
@@ -150,6 +152,7 @@ Hence, the binomial tree can be interpreted as a discrete-time approximation of
 the continuous-time Black-Scholes model, where the stock price follows a geometric 
 Brownian motion.
 
+\subsection{Tree Structure and Path Tracking}
 
 Starting at $S_0$, each node splits into two branches: an up-branch 
 ($S^u = S \times u$) and a down-branch ($S^d = S \times d$). After 25 periods, the 
@@ -181,6 +184,8 @@ cumulative sum $C_t$ at each node.
 \section{Arithmetic Average at Terminal Nodes}
 \label{sec:average}
 
+\subsection{Cumulative Sum Construction}
+
 To compute the arithmetic average at each terminal node, we use the
 cumulative sum $C_t$ stored at each node throughout the tree, as seen in Figure~\ref{fig:tree_avg}. 
 In order to compute the average at maturity, we apply the classical arithmetic average formula:
@@ -208,6 +213,7 @@ than the number of periods.
   \item calcualte skewness and kurtosis of these distributions (Erwan)
 \end{itemize}
 
+\subsection{Distribution of the Average}
 
 \begin{itemize}
   \item Description and interpretation of the distributions (Andrea)
@@ -276,6 +282,8 @@ payoffs.
 \section{Payoff at Terminal Nodes}
 \label{sec:payoff}
 
+\subsection{Payoff Formula}
+
 Asian options are path-dependent derivatives whose payoff depends on the average price
 of the underlying asset over the life of the contract, rather than solely on its terminal
 value. The payoff of a European floating-strike Asian call option can be written as follow:
@@ -300,6 +308,8 @@ worthless and the payoff is zero.
   \caption{Three-period illustration of the payoff construction in the binomial tree. In the actual pricing, terminal payoffs are computed on the full 25-period tree at $t=25$, and $V_0$ is obtained by backward induction from that full tree; the values displayed here are illustrative only.}
   \label{fig:tree_payoff}
 \end{figure}
+
+\subsection{Descriptive Statistics and Distribution}
 
 Table~\ref{tab:stats_V} reports descriptive statistics of the payoff $A_T = (S_n - \bar{S}_n)^+$ 
 computed at the terminal nodes of the binomial tree ($t = 25$).
@@ -727,6 +737,7 @@ normal, as shown in Figure~\ref{fig:distribution_q}.
 \section{Backward Induction and Option Price}
 \label{sec:backwardinduction}
 
+\subsection{Recursive Pricing Algorithm}
 
 To perform backward induction, we priced the option by first computing its terminal payoff (or the value of the option at maturity) for each terminal node,
 \[
@@ -750,6 +761,8 @@ from maturity back to the initial node. Essentially we are computing the expecte
   \caption{Extract of the first three steps of the 25-period backward-induction tree. Only the first displayed nodes are shown, but their option values come from the full 25-period backward-induction computation, not from a truncated 3-period tree.}
   \label{fig:backward_induction_tree}
 \end{figure}
+
+\subsection{Final Option Value}
 
 \noindent Following this procedure, we find that the value of the option at $t=0$ is:
 
@@ -998,6 +1011,8 @@ This means a relative difference \(\frac{V^{N}_0 - V^{Bi}_0}{V^{Bi}_0} \approx 0
 \section{Conclusion}
 \label{sec:conclusion}
 
+\subsection{Summary of Results}
+
 \begin{itemize}
   \item summary of the results (Andrea)
   \item limitations of the model (Andrea)
@@ -1006,6 +1021,9 @@ This means a relative difference \(\frac{V^{N}_0 - V^{Bi}_0}{V^{Bi}_0} \approx 0
   \end{itemize}
 
 \end{itemize}
+
+\subsection{Model Limitations and Extensions}
+
 Our model relies on several simplifying assumptions that open the
 door to possible extensions. First, increasing the number of periods
 $n$ would yield a more accurate price. With $n=25$, the result is
