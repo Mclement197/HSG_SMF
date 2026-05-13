@@ -184,8 +184,6 @@ cumulative sum $C_t$ at each node.
 \section{Arithmetic Average at Terminal Nodes}
 \label{sec:average}
 
-\subsection{Cumulative Sum Construction}
-
 To compute the arithmetic average at each terminal node, we use the
 cumulative sum $C_t$ stored at each node throughout the tree, as seen in Figure~\ref{fig:tree_avg}. 
 In order to compute the average at maturity, we apply the classical arithmetic average formula:
@@ -281,8 +279,6 @@ payoffs.
 
 \section{Payoff at Terminal Nodes}
 \label{sec:payoff}
-
-\subsection{Payoff Formula}
 
 Asian options are path-dependent derivatives whose payoff depends on the average price
 of the underlying asset over the life of the contract, rather than solely on its terminal
@@ -729,8 +725,6 @@ normal, as shown in Figure~\ref{fig:distribution_q}.
 
 \section{Backward Induction and Option Price}
 \label{sec:backwardinduction}
-
-\subsection{Recursive Pricing Algorithm}
 
 To perform backward induction, we priced the option by first computing its terminal payoff (or the value of the option at maturity) for each terminal node,
 \[
