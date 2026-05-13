@@ -1254,12 +1254,15 @@ def plot_dn_positive_payoff_density(
     r_: float = 0.01,
     output_dir: str | Path = "graphs",
     filename: str | Path = "Dn_positive_payoff_density.png",
+    discounted_value: float | None = None,
 ) -> str:
     """
     Plot x^+ times the normal density of Dn.
 
     The area under this curve equals E[(Dn)^+] under the normal approximation.
     Discounting this area gives the approximate option price.
+    If discounted_value is supplied, it is used for the annotation instead of
+    recomputing the closed-form normal-approximation price from mu and var.
     """
     if var <= 0:
         raise ValueError("Variance must be strictly positive.")
@@ -1272,8 +1275,8 @@ def plot_dn_positive_payoff_density(
     )
 
     positive_payoff_density = np.maximum(x, 0) * normal_density
-    expected_positive_payoff = np.trapezoid(positive_payoff_density, x)
-    discounted_value = np.exp(-r_ * 0.5) * expected_positive_payoff
+    if discounted_value is None:
+        discounted_value = get_v0_with_Dn(mu, var, r_)
 
     output_path = _prepare_output_path(output_dir, filename)
 
