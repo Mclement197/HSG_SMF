@@ -802,20 +802,21 @@ Table~\ref{tab:fixed_strike} reports prices for five representative strikes.
   \caption{Monte Carlo prices of the Asian call under fixed strikes
   (500{,}000 simulations, $\sigma = 31.30\%$, $r = 1\%$,
   $T = 0.5$ years).}
-  \label{tab:fixed_strike}
+\label{tab:fixed_strike}
 
   \small
   \setlength{\tabcolsep}{6pt}
   \renewcommand{\arraystretch}{1.15}
 
-  \begin{tabular}{rr}
+  \begin{tabular}{lrr}
     \toprule
-    \textbf{Strike} $K$ (\$) & \textbf{MC Price} (\$) \\
+    \textbf{Description} & \textbf{Strike} $K$ (\$) & \textbf{MC Price} (\$) \\
     \midrule
-    164.38 & 106.81 \\
-    249.03 & 26.29 \\
-    271.46 & 12.39 \\
-    296.16 & 4.19 \\
+    Minimum          & 164.38 & 106.81 \\
+    $\mu - \sigma$   & 249.03 & 26.29 \\
+    Mean             & 271.46 & 12.39 \\
+    $\mu + \sigma$   & 296.16 & 4.19 \\
+    Maximum          & 497.17 & 0.00 \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -881,7 +882,28 @@ Table~\ref{tab:fixed_strike} reports prices for five representative strikes.
   \end{minipage}
 \end{table}
 
+This table reports the sensitivity of the option price $V_0$ to the two key model 
+parameters: annualised volatility $\sigma$ and risk-free rate $r$, with the baseline 
+calibration ($\sigma = 31.30\%$, $r = 1\%$) highlighted, yielding $V_0 = \$14.05$.
 
+Two clear patterns emerge. First, the option price is monotonically increasing in 
+volatility: at $r = 1\%$, moving from $\sigma = 20\%$ to $\sigma = 40\%$ nearly 
+doubles the price, from \$9.11 to \$17.85. This is consistent with standard option 
+pricing theory — higher volatility increases the dispersion of terminal payoffs, 
+raising the expected value of $\max(D_n, 0)$ under the risk-neutral measure.
+
+Second, the price is also increasing in $r$, though the effect is considerably 
+smaller: at baseline volatility $\sigma = 31.30\%$, varying $r$ from $0\%$ to $2\%$ 
+raises the price by only \$0.64, from \$13.73 to \$14.37. This reflects the fact 
+that a higher $r$ shifts the risk-neutral probability $q$ upward (as seen in Table 2), 
+giving slightly more weight to upward paths and thus increasing the expected payoff 
+under $\mathbb{Q}$. However, discounting at a higher rate partially offsets this 
+effect, explaining the muted sensitivity.
+
+Overall, volatility is by far the dominant driver of the option price, which is 
+typical for short-maturity options ($T = 0.5$ years). The baseline price sits near 
+the centre of the reported range, confirming that our calibration is not at an 
+extreme of the parameter space.
 
 \newpage
 
