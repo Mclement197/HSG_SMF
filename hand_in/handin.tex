@@ -626,40 +626,10 @@ $u + d \geq 2\sqrt{ud} = 2$. Combined with $1+r > 1$, we get $(1+r)(u+d) > 2$, s
 numerator $2 - (1+r)(u+d) < 0$. Higher volatility widens the spread $u - d$, so the
 denominator grows faster than the numerator, and $q$ decreases. When moves are
 more extreme, the up state needs less risk-neutral probability to still price assets correctly.
-\vspace{1em}
+\vspace{3em}
 
 \noindent We can see the sensitivity of both factor in the following table.
-\vspace{0.1em}
-\begin{itemize}
-  \item intro why we need q (Erwan)
-  \item proof of q (Erwan)
-  \item explain relation with vol and interest rate (Erwan)
-  \item Matrix vol interest rate (Mathis) DONE
-  \item Interpretation of q matrix (Erwan)
-  \item show result of q (Erwan)
-  \item Distribution of the payoff under q vs p (Juliette)
-\end{itemize}
-Figure~\ref{fig:distribution_q} displays the risk-neutral distribution 
-of up moves over $n = 25$ steps, approximated by a normal distribution 
-with mean $\mu_q = nq$ and variance $\sigma_q^2 = nq(1-q)$.
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{graphs/distribution_q.png}
-    \caption{Risk-Neutral Distribution of Up Moves ($n = 25$ steps, AAPL)}
-    \label{fig:distribution_q}
-\end{figure}
-The risk-neutral probability $q \approx 0.491$, derived from the 
-no-arbitrage condition as shown above, depends on $r$ and $\sigma$ rather than 
-historical returns. Unlike the physical probability $p$, which describes 
-the actual likelihood of an up-move, $q$ is a mathematical construct. 
-Since $r < \mu$ under typical market conditions, the risk-neutral 
-probability discounts the upward drift, making $q < p$ as expected.
-
-Comparing skewness and kurtosis between the two is not straightforward, 
-as differences in these moments capture not only beliefs about tail risks 
-but also their pricing. With a skewness of $0.007$ and excess kurtosis 
-of $-0.080$, the distribution of $q$ is nearly symmetric and close to 
-normal, as shown in Figure~\ref{fig:distribution_q}.
+\vspace{1em}
 
 \begin{table}[H]
   \centering
@@ -710,23 +680,14 @@ normal, as shown in Figure~\ref{fig:distribution_q}.
     \(r = 0.0100\) and \(\sigma = 0.3130\).
   \end{minipage}
 \end{table}
+\vspace{2.5em}
 
-
-\begin{itemize}
-  \item intro why we need q (Erwan)
-  \item proof of q (Erwan)
-  \item explain relation with vol and interest rate (Erwan)
-  \item Matrix vol interest rate (Mathis) DONE
-  \item Interpretation of q matrix (Erwan)
-  \item show result of q (Erwan)
-  \item Distribution of the payoff under q vs p (Juliette)
-\end{itemize}
 Figure~\ref{fig:distribution_q} displays the risk-neutral distribution 
 of up moves over $n = 25$ steps, approximated by a normal distribution 
 with mean $\mu_q = nq$ and variance $\sigma_q^2 = nq(1-q)$.
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{graphs/distribution_q.png}
+    \includegraphics[width=\textwidth]{graphs/distribution_q.pdf}
     \caption{Risk-Neutral Distribution of Up Moves ($n = 25$ steps, AAPL)}
     \label{fig:distribution_q}
 \end{figure}
@@ -742,6 +703,15 @@ as differences in these moments capture not only beliefs about tail risks
 but also their pricing. With a skewness of $0.007$ and excess kurtosis 
 of $-0.080$, the distribution of $q$ is nearly symmetric and close to normal.
 
+\begin{itemize}
+  \item intro why we need q (Erwan)
+  \item proof of q (Erwan)
+  \item explain relation with vol and interest rate (Erwan)
+  \item Matrix vol interest rate (Mathis) DONE
+  \item Interpretation of q matrix (Erwan)
+  \item show result of q (Erwan)
+  \item Distribution of the payoff under q vs p (Juliette)
+\end{itemize}
 
 \newpage
 
