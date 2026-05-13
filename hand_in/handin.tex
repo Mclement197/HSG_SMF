@@ -98,8 +98,8 @@
 Asian options are path-dependent derivatives whose payoff depends on the average
 price of the underlying asset over the life of the contract, rather than solely on
 its terminal value. This averaging feature reduces sensitivity to short-term price
-variation, making Asian options particularly prevalent in equity and
-commodity markets. This paper focuses on a European floating-strike Asian call option
+variation, making Asian options particularly prevalent in
+commodity markets. This assignment focuses on pricing a European floating-strike Asian call option
 written on Apple Inc. (AAPL), in which the strike is determined by the
 realized arithmetic average of the underlying over the option's life.
 We price this derivative using a multi-period binomial tree with $n = 25$ periods,
@@ -208,6 +208,30 @@ than the number of periods.
   \item calcualte skewness and kurtosis of these distributions (Erwan)
 \end{itemize}
 
+The top-left panel shows the distribution of the cumulative price sum $C_T = \sum_{t=0}^{n} 
+S_t$ at terminal nodes. The distribution is slightly 
+right-skewed, with a mean of \$7,125.36. This near-normality is consistent with the 
+central limit theorem: $C_T$ is a sum of correlated but smoothly varying terms, whose 
+aggregate distribution converges towards normality as $n$ grows.
+
+The top-right panel displays all individual paths of $C_t$ up to time $t = 12$. Starting 
+from the initial value $S_0 = \$270.71$, the paths fan out progressively as the number 
+of up and down moves diverges across paths. The spread widens monotonically over time, 
+reflecting the compounding effect of successive multiplicative shocks.
+
+The bottom-left panel shows the distribution of the arithmetic average $\bar{S}_T = 
+C_T / (n+1)$ at terminal nodes, with a mean of \$274.05. The distribution inherits the 
+approximate normality of $C_T$, since $\bar{S}_T$ is simply a rescaling of $C_T$ by the 
+constant factor $1/(n+1)$.
+
+The bottom-right panel displays the distribution of the terminal stock price $S_n$ at 
+maturity. Unlike the previous panels, this distribution is discrete, with only 26 possible 
+values corresponding to the $n+1$ terminal nodes of the recombining tree. It is visibly 
+right-skewed with a mean of \$277.42, consistent with the log-normal shape of stock prices 
+under the binomial model. The contrast between this discrete, skewed distribution and the 
+smoother distribution of $\bar{S}_T$ illustrates why path-dependence matters: two paths 
+reaching the same $S_n$ can have very different averages, and therefore very different 
+payoffs.
 \begin{figure}[H]
     \centering
 
@@ -247,12 +271,11 @@ than the number of periods.
 
 Asian options are path-dependent derivatives whose payoff depends on the average price
 of the underlying asset over the life of the contract, rather than solely on its terminal
-value. This paper prices a European floating-strike Asian call option written on Apple
-Inc. (AAPL), with payoff at maturity:
+value. The payoff of a European floating-strike Asian call option can be written as follow:
 \begin{equation}
 A_T = \max\!\left(S_n - \frac{1}{n+1}\sum_{t=0}^{n} S_t,\ 0\right)
 \end{equation}
-The option pays off when the terminal price exceeds the realized arithmetic average, a
+The option pays off when the terminal price exceeds the realized arithmetic average when \(S_T > \bar{S}_T\), a
 structure that is path-dependent, as the payoff cannot be recovered from the
 terminal price alone.
 
@@ -328,6 +351,18 @@ at every period, i.e. $270 \cdot u^{25} = 321.58$.
     \label{fig:four_images}
 \end{figure}
 
+The left panel shows the full distribution. It is heavily right-skewed: the dominant mass 
+sits at $V_T = 0$, reflecting the fact that more than half of all paths expire worthless 
+(i.e. $S_n < \bar{S}_n$), consistent with the median of zero reported in Table 1. Beyond 
+zero, the density decays rapidly and becomes very thin beyond $V_T = 100$. The mean of \$15.71 lies well to the right of the 
+median, pulled upward by these rare but large payoffs.
+
+The right panel restricts attention to paths with strictly positive payoffs ($V_T > 0$). 
+Conditioning on the option finishing in the money, the distribution remains strongly 
+right-skewed and decreasing, with a mean of \$31.88. The shape resembles an exponential 
+decay, reflecting the fact that high payoffs require sustained upward moves, which become 
+increasingly unlikely under the binomial model. This confirms that the value of the option 
+is driven by a small fraction of paths with large terminal gains.
 
 \newpage
 
@@ -686,6 +721,19 @@ leading to a lower expected payoff.
   \item compare with MC (Andrea)
 \end{itemize}
 
+As a validation of our backward-induction result, we compare $V_0^{Bi} = \$14.05$ 
+against a Monte Carlo simulation of 500,000 paths with identical parameters ($S_0 = 
+\$270.71$, $\sigma = 31.30\%$, $r = 1\%$, $T = 0.5$, $n = 25$). The Monte Carlo yields 
+a price of $V_0^{MC} = \$13.87$ (95\% CI: [13.80, 13.93]), a difference of \$0.18, 
+or approximately 1.3\%.
+
+This small discrepancy is consistent with the discretisation error inherent to a 
+25-period binomial tree. The binomial model approximates the continuous-time 
+Black-Scholes dynamics by restricting stock price movements to two outcomes per period. 
+With $n = 25$ steps, this approximation is coarse, and the tree price slightly 
+overshoots the Monte Carlo estimate. As $n \to \infty$, the binomial price converges 
+to the true continuous-time price, and the gap would close. The agreement between both 
+methods therefore validates our implementation.
 
 
 \newpage
@@ -705,8 +753,7 @@ which is close to our backward-induction price of $V_0^{\mathrm{Bi}} = \$14.05$.
 The difference of \$0.18 (approximately 1.3\%) is consistent with the
 discretisation error inherent to a 25-period binomial tree.
 As $n \to \infty$, the binomial price converges to the true continuous-time price,
-and this gap would close. The agreement between both methods validates our
-implementation.
+and this gap would close. 
 To further contextualise the floating-strike price, we also price the Asian option
 under a fixed-strike specification using Monte Carlo.
 Table~\ref{tab:fixed_strike} reports prices for five representative strikes.
