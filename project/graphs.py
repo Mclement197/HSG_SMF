@@ -68,9 +68,22 @@ COLUMN_LABELS = {
     "normalised_S_bar": "Normalised average price",
 }
 
+TERMINAL_COLUMN_LABELS = {
+    "S": "Terminal stock price $S_T$",
+    "C": "Terminal cumulative price sum $C_T$",
+    "S_bar": "Terminal arithmetic average $\\bar{S}_T$",
+    "V": "Terminal option value $V_T$",
+    "normalised_C": "Normalised terminal cumulative sum",
+    "normalised_S_bar": "Normalised terminal average price",
+}
+
 
 def _column_label(value_col: str) -> str:
     return COLUMN_LABELS.get(value_col, value_col.replace("_", " "))
+
+
+def _terminal_column_label(value_col: str) -> str:
+    return TERMINAL_COLUMN_LABELS.get(value_col, _column_label(value_col))
 
 
 def _format_value(value: float | int | None, digits: int = 2) -> str:
@@ -479,7 +492,7 @@ def plot_terminal_distribution(
     _style_axes(
         ax,
         title="",
-        xlabel=_column_label(value_col),
+        xlabel=_terminal_column_label(value_col),
         ylabel="Density" if density else "Count",
     )
     _style_legend(ax)
