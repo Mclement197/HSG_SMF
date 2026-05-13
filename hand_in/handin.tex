@@ -129,7 +129,7 @@ $p = 0.5$. Both factors are calibrated using the volatility $\sigma$
 estimated from Apple's daily log-returns over 2020--2026, using a 
 historical method.
 
-\subsection{CRR Parametrization}
+\subsection{Binomial Model Parametrization}
 
 The size of the up and down moves is determined by the annualized volatility 
 \(\sigma\) (annualized using $\sqrt{250}$) and by the length of one time step \(\Delta t = T/n\). 
@@ -699,6 +699,8 @@ more extreme, the up state needs less risk-neutral probability to still price as
 \end{table}
 \vspace{2.5em}
 
+\subsection{Comparison of P and Q Distributions}
+
 Figure~\ref{fig:distribution_q} displays the risk-neutral distribution 
 of up moves over $n = 25$ steps, approximated by a normal distribution 
 with mean $\mu_q = nq$ and variance $\sigma_q^2 = nq(1-q)$.
@@ -721,15 +723,6 @@ but also their pricing. With a skewness of $0.007$ and excess kurtosis
 of $-0.080$, the distribution of $q$ is nearly symmetric and close to 
 normal, as shown in Figure~\ref{fig:distribution_q}.
 
-\begin{itemize}
-  \item intro why we need q (Erwan)
-  \item proof of q (Erwan)
-  \item explain relation with vol and interest rate (Erwan)
-  \item Matrix vol interest rate (Mathis) DONE
-  \item Interpretation of q matrix (Erwan)
-  \item show result of q (Erwan)
-  \item Distribution of the payoff under q vs p (Juliette)
-\end{itemize}
 
 \newpage
 
@@ -781,6 +774,8 @@ leading to a lower expected payoff.
   \item show the price of the option being the same with different paths (Erwan)
   \item compare with MC (Andrea)
 \end{itemize}
+
+\subsection{Comparison with Monte Carlo}
 
 As a validation of our backward-induction result, we compare $V_0^{Bi} = \$14.05$ 
 against a Monte Carlo simulation of 500,000 paths with identical parameters ($S_0 = 
