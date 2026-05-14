@@ -417,18 +417,17 @@ option as a discounted expectation under $\mathbb{Q}$,
 \]
 without specifying any utility function or risk premium. In the remainder of 
 this section, we first derive the formula for $q$ from first principles using 
-the no-arbitrage replicating portfolio argument covered in lecture, examine how 
-$q$ depends on the volatility parameters $u$, $d$ and the interest rate $r$, 
-and then apply it to compute the risk-neutral probabilities for Apple's 
-binomial tree.
+the no-arbitrage replicating portfolio argument covered in lecture within a 
+single-period binomial model, examine how $q$ depends on the volatility 
+parameters $u$, $d$ and the interest rate $r$, and then apply it to compute 
+the risk-neutral probabilities for Apple's binomial tree.
 \vspace{1em}
 
 \subsection{Proving the formula of Q}
--> AJOUTER SINGLE PERIOD MODEL + SELF FINANCING
 
 \noindent To derive the risk-neutral probability $q$, we consider an investor who allocates 
-wealth between the stock $S$ and the bond $B$ by choosing a portfolio 
-$H = (\alpha, \beta)$. The portfolio value at $t=1$ is:
+wealth between the stock $S$ and the bond $B$ by choosing a self-financing
+portfolio $H = (\alpha, \beta)$ in a single-period model. The portfolio value at $t=1$ is:
 
 \vspace{1em}
 \[
@@ -440,15 +439,10 @@ V_1 = \alpha S_1 + \beta \cdot B_1 =
 \end{array}
 \right.
 \]
-\vspace{1em}
-
-\noindent The investor maximises expected utility $\mathbb{E}_{\mathbb{P}}[u(V_1)]$ subject to the budget 
-constraint $\alpha S_0 + \beta B_0 = V_0$. 
--> FIX ISSUE FORMATING
-
 \vspace{2em}
 
-\noindent \uline{The investor's optimisation problem is thus:}
+\noindent The investor maximises expected utility $\mathbb{E}_{\mathbb{P}}[u(V_1)]$ subject to the budget 
+constraint. The investor's optimisation problem is thus:
 
 \[
 \max_{\alpha,\, \beta} \; \mathbb{E}_{\mathbb{P}}\left[u\!\left(\alpha S_1 + \beta \cdot B_1\right)\right]
@@ -780,9 +774,53 @@ contract. Note that $V_0$ is lower than the mean terminal payoff
 (15.71) because under the risk-neutral measure $q \approx 0.491$,
 the stock has slightly less chance of going up than under $p = 0.5$,
 leading to a lower expected payoff.
-\begin{itemize}
-  \item show the price of the option being the same with different paths (Erwan)
-\end{itemize}
+
+\subsection{Path-Independence of the Price Contribution}
+
+Although the Asian payoff $V_T = (S_T - \bar{S}_T)^+$ is path-dependent
+through $\bar{S}_T$, two distinct paths through the tree may end at the
+same $(S_T, \bar{S}_T)$ state and therefore contribute identically to
+$V_0$. Scanning the terminal layer of the 25-period tree for shared
+payoffs, we found multiple such pairs. One example is shown in the following table:
+\vspace{1em}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lcc}
+\toprule
+ & Path A & Path B \\
+\midrule
+History (U/D sequence)         & \texttt{\textbf{UDUUD} U$\ldots$U} & \texttt{\textbf{UUDDU} U$\ldots$U} \\
+Number of up-moves             & 23                        & 23 \\
+Number of down-moves           & 2                         & 2 \\
+Terminal price $S_T$           & 685.25                    & 685.25 \\
+Path average $\bar{S}_T$       & 422.32                    & 422.32 \\
+Terminal payoff $V_T$          & 262.93                    & 262.93 \\
+Risk-neutral weight            & $q^{23}(1-q)^2$           & $q^{23}(1-q)^2$ \\
+\bottomrule
+\end{tabular}
+\caption{Two distinct paths producing the same terminal state and therefore
+the same contribution to $V_0$.}
+\label{tab:same-payoff}
+\end{table}
+\vspace{0.3cm}
+
+The two histories differ in the ordering of their two down-moves, yet
+both yield the same terminal price (since $S_T$ depends only on the
+count of up- and down-moves, not their order) and, by algebraic
+coincidence, the same path average. Because the risk-neutral weight
+$q^{n_u}(1-q)^{n_d}$ also depends only on the counts, both paths enter
+the discounted expectation
+\[
+V_0 = \frac{1}{(1+r)^T} \, \mathbb{E}_{\mathbb{Q}}[V_T]
+    = \frac{1}{(1+r)^T}  \sum q^{n_u}(1-q)^{n_d}\, V_T
+\]
+\vspace{0.1em}
+
+with identical weight and identical payoff. They are
+indistinguishable from the option's perspective. This illustrates that
+what matters for pricing is the terminal state $(S_T, \bar{S}_T)$, not
+the specific route taken to reach it.
 
 \subsection{Comparison with Monte Carlo}
 

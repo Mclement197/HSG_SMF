@@ -364,9 +364,19 @@ def relative_diff_Bi_Dn() -> float:
 
     return (Dn_price - Bi) / Bi
 
-
 if __name__ == "__main__":
     Bi, tree = get_v0(25, return_tree=True)
 
-    print(get_robustness_matrix_q(tree))
-    print(get_robustness_matrix_v0(tree))
+    n = tree.select(pl.col("t").max()).item()
+
+    terminal = tree.filter(pl.col("t") == n)
+
+    duplicates = (
+        terminal
+        .with_columns(pl.col("V").round(10))
+        .with_columns(pl.col("V").count().over("V").alias("n_paths_same_payoff"))
+        .filter(pl.col("n_paths_same_payoff") > 1)
+        .sort(["V", "history"])
+    )
+
+    print(duplicates.select(["path_id", "history", "S", "S_bar", "V", "n_paths_same_payoff"]))
