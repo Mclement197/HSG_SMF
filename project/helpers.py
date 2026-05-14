@@ -364,6 +364,7 @@ def relative_diff_Bi_Dn() -> float:
 
     return (Dn_price - Bi) / Bi
 
+
 v, tree = get_v0(25, True)
 print(tree.filter(pl.col("t") == 25).select(pl.col("C")))
 

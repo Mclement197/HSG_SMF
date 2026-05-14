@@ -21,6 +21,7 @@
 \usepackage{listings}
 \usepackage{lmodern}
 \usepackage{ulem}
+\usepackage[bottom,hang,flushmargin]{footmisc}
 
 
 % Page geometry
@@ -656,10 +657,8 @@ $u + d \geq 2\sqrt{ud} = 2$. Combined with $1+r > 1$, we get $(1+r)(u+d) > 2$, s
 numerator $2 - (1+r)(u+d) < 0$. Higher volatility widens the spread $u - d$, so the
 denominator grows faster than the numerator, and $q$ decreases. When moves are
 more extreme, the up state needs less risk-neutral probability to still price assets correctly.
-\vspace{3em}
 
-\noindent We can see the sensitivity of both factor in the following table.
-\vspace{1em}
+\noindent We can see the sensitivity of both factor in the table~\ref{tab:sensitivity_rates_volatility}:
 
 \begin{table}[H]
   \centering
@@ -710,7 +709,9 @@ more extreme, the up state needs less risk-neutral probability to still price as
     \(r = 0.0100\) and \(\sigma = 0.3130\).
   \end{minipage}
 \end{table}
-\vspace{2.5em}
+
+
+
 
 \subsection{Comparison of P and Q Distributions}
 
