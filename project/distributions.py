@@ -1,13 +1,10 @@
-from pathlib import Path
-
 import datetime as dt
 from math import comb, e, exp, pi, sqrt
-
-import matplotlib.pyplot as plt
-import numpy as np
+from pathlib import Path
 
 from helpers import get_AAPL_timeseries, get_vol
-
+import matplotlib.pyplot as plt
+import numpy as np
 
 COLORS = {
     "paper": "#ffffff",
@@ -103,6 +100,7 @@ def normal_pdf(x: float, mu: float, sigma: float) -> float:
 # plt.savefig("distribution_q.png", dpi=200, bbox_inches="tight", facecolor="white")
 # plt.show()
 
+
 def binomial_pmf(k: int, n: int, q: float) -> float:
     return float(comb(n, k) * (q**k) * ((1 - q) ** (n - k)))
 
@@ -167,13 +165,15 @@ def plot_risk_neutral_up_moves_distribution(
         color=COLORS["orange"],
         linestyle=(0, (4, 3)),
         linewidth=1.35,
-        label=fr"Mean = {mu_q:.2f}",
+        label=rf"Mean = {mu_q:.2f}",
     )
 
     stats_text = (
-        fr"$q = {q:.3f}$" "\n"
-        fr"Skewness = {skew_q:.3f}" "\n"
-        fr"Excess kurtosis = {kurt_q:.3f}"
+        rf"$q = {q:.3f}$"
+        "\n"
+        rf"Skewness = {skew_q:.3f}"
+        "\n"
+        rf"Excess kurtosis = {kurt_q:.3f}"
     )
     ax.text(
         0.98,

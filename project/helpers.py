@@ -1,6 +1,6 @@
 # This files contains all the helper functions for the repo
 import datetime as dt
-from math import e, pi, erf, sqrt
+from math import e, erf, pi, sqrt
 import os
 
 import polars as pl
@@ -18,13 +18,26 @@ def get_AAPL_timeseries(
     end: dt.date | None = None,
 ) -> pl.DataFrame:
     """Get AAPL closing prices as a Polars DataFrame."""
-    end = dt.date(2026, 4, 29) if end is None else end + dt.timedelta(days=1)
+    requested_end = dt.date(2026, 4, 28) if end is None else end
+    download_end = requested_end + dt.timedelta(days=1)
 
-    df = pl.from_pandas(yf.download(ticker, start, end).reset_index())
-    df = df.with_columns(pl.col(df.columns[0]).alias("Date").cast(dt.date))
-    df = df.with_columns(pl.col(df.columns[1]).alias("Close").cast(pl.Float64))
+    download = yf.download(
+        ticker,
+        start=start,
+        end=download_end,
+        auto_adjust=False,
+        progress=False,
+    )
+    close = download["Close"]
+
+    if hasattr(close, "columns"):
+        close = close[ticker] if ticker in close.columns else close.iloc[:, 0]
+
+    df = pl.from_pandas(close.rename("Close").reset_index())
+    df = df.with_columns(pl.col("Date").cast(dt.date))
+    df = df.with_columns(pl.col("Close").cast(pl.Float64))
     df = df.select(pl.col("Date"), pl.col("Close"))
-    return df.filter(pl.col("Date") >= start, pl.col("Date") <= end)
+    return df.filter(pl.col("Date") >= start, pl.col("Date") <= requested_end)
 
 
 def get_log_returns(df: pl.DataFrame) -> pl.DataFrame:
@@ -35,7 +48,9 @@ def get_log_returns(df: pl.DataFrame) -> pl.DataFrame:
 
 def get_vol(df: pl.DataFrame) -> float:
     if "log_returns" in df.columns:
-        return df.select(pl.col("log_returns").std(ddof=1).alias("vol")).item() * 250**0.5
+        return (
+            df.select(pl.col("log_returns").std(ddof=1).alias("vol")).item() * 250**0.5
+        )
 
     df = get_log_returns(df)
     return df.select(pl.col("log_returns").std(ddof=1).alias("vol")).item() * 250**0.5
@@ -118,9 +133,7 @@ def normalise(df: pl.DataFrame, col: str = "C") -> pl.DataFrame:
     std = df.select(pl.col(col)).std(ddof=1).item()
     mean = df.select(pl.col(col).mean()).item()
 
-    return df.with_columns(
-        ((pl.col(col) - mean) / std).alias(f"normalised_{col}")
-    )
+    return df.with_columns(((pl.col(col) - mean) / std).alias(f"normalised_{col}"))
 
 
 def get_arithmetic_avg(df: pl.DataFrame) -> pl.DataFrame:
@@ -167,8 +180,9 @@ def backward_induction(
                 }
             )
             .with_columns(
-                (discount * (q * pl.col("V_up") + (1 - q) * pl.col("V_down")))
-                .alias("V_new")
+                (discount * (q * pl.col("V_up") + (1 - q) * pl.col("V_down"))).alias(
+                    "V_new"
+                )
             )
             .select(["path_id", "V_new"])
         )
@@ -274,8 +288,7 @@ def get_robustness_matrix_v0(df: pl.DataFrame) -> pl.DataFrame:
     for vol in vols:
         col_name = "actual" if vol == actual_vol else str(vol)
         data[col_name] = [
-            get_v0_2(25, get_q(df, vol, rate), vol, rate)
-            for rate in irates
+            get_v0_2(25, get_q(df, vol, rate), vol, rate) for rate in irates
         ]
 
     return pl.DataFrame(data)
@@ -295,23 +308,16 @@ def get_v0_with_Dn(mu: float, var: float, r_: float = 0.01) -> float:
     sigma = var**0.5
     z = mu / sigma
 
-    return e ** (-r_ * T) * (
-        sigma * normal_pdf(z)
-        + mu * normal_cdf(z)
-    )
+    return e ** (-r_ * T) * (sigma * normal_pdf(z) + mu * normal_cdf(z))
 
 
 def add_q_weights(df: pl.DataFrame, q: float) -> pl.DataFrame:
-    return (
-        df.with_columns(
-            pl.col("history").str.count_matches("U").alias("n_up"),
-            pl.col("history").str.count_matches("D").alias("n_down"),
-        )
-        .with_columns(
-            (
-                (pl.lit(q) ** pl.col("n_up"))
-                * (pl.lit(1 - q) ** pl.col("n_down"))
-            ).alias("q_weight")
+    return df.with_columns(
+        pl.col("history").str.count_matches("U").alias("n_up"),
+        pl.col("history").str.count_matches("D").alias("n_down"),
+    ).with_columns(
+        ((pl.lit(q) ** pl.col("n_up")) * (pl.lit(1 - q) ** pl.col("n_down"))).alias(
+            "q_weight"
         )
     )
 
@@ -322,13 +328,9 @@ def get_dn_moments(tree: pl.DataFrame, q: float) -> tuple[float, float]:
     terminal = tree.filter(pl.col("t") == n)
     terminal = add_q_weights(terminal, q)
 
-    mu = terminal.select(
-        (pl.col("q_weight") * pl.col("Dn")).sum()
-    ).item()
+    mu = terminal.select((pl.col("q_weight") * pl.col("Dn")).sum()).item()
 
-    var = terminal.select(
-        (pl.col("q_weight") * (pl.col("Dn") - mu) ** 2).sum()
-    ).item()
+    var = terminal.select((pl.col("q_weight") * (pl.col("Dn") - mu) ** 2).sum()).item()
 
     return mu, var
 
@@ -363,8 +365,19 @@ def relative_diff_Bi_Dn() -> float:
     return (Dn_price - Bi) / Bi
 
 
-if __name__ == "__main__":
-    Bi, tree = get_v0(25, return_tree=True)
+v, tree = get_v0(25, True)
+print(tree.filter(pl.col("t") == 25).select(pl.col("C")))
 
-    print(get_robustness_matrix_q(tree))
-    print(get_robustness_matrix_v0(tree))
+c = tree.filter(pl.col("t") == 25).select(pl.col("C")).to_series()
+
+mean = c.mean()
+std = c.std()
+
+# Standardized moments
+skewness = ((c - mean) / std).pow(3).mean()
+kurtosis = ((c - mean) / std).pow(4).mean()  # raw kurtosis (normal = 3)
+excess_kurtosis = kurtosis - 3
+
+print(f"Skewness:         {skewness:.6f}")
+print(f"Kurtosis:         {kurtosis:.6f}")
+print(f"Excess kurtosis:  {excess_kurtosis:.6f}")
