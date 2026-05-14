@@ -222,6 +222,40 @@ nodes with $S=270.71$) carry different averages (283.01 vs 259.88), confirming t
 the arithmetic average is path-dependent and cannot be recovered from the current 
 stock price alone.
 
+\begin{table}[H]
+  \centering
+  \caption{Sample paths at $t = 25$ from the binomial tree simulation.}
+  \label{tab:sample_paths}
+  \setlength{\tabcolsep}{8pt}
+  \begin{tabular}{@{}crrp{5.5cm}@{}}
+    \toprule
+    $t$ & $S_t$ & $\bar{S}_t$ & Path \\
+    \midrule
+    25 & 817.997 & 496.714 & {\ttfamily UUUUUUUUUUUUUUUUUUUUUUUUU} \\
+    25 & 748.686 & 455.508 & {\ttfamily DUUUUUUUUUUUUUUUUUUUUUUUUU} \\
+    25 & 748.686 & 456.429 & {\ttfamily UDUUUUUUUUUUUUUUUUUUUUUUUU} \\
+    25 & 685.248 & 418.636 & {\ttfamily DDUUUUUUUUUUUUUUUUUUUUUUUU} \\
+    25 & 748.686 & 457.392 & {\ttfamily UUDUUUUUUUUUUUUUUUUUUUUUUU} \\
+    $\vdots$ & $\vdots$ & $\vdots$ & \multicolumn{1}{c}{$\vdots$} \\
+    25 &  97.703 & 176.671 & {\ttfamily DDUDDDDDDDDDDDDDDDDDDDDDDD} \\
+    25 & 106.748 & 193.026 & {\ttfamily UUDDDDDDDDDDDDDDDDDDDDDDDD} \\
+    25 &  97.703 & 177.552 & {\ttfamily DUDDDDDDDDDDDDDDDDDDDDDDDD} \\
+    25 &  97.703 & 178.474 & {\ttfamily UDDDDDDDDDDDDDDDDDDDDDDDDD} \\
+    25 &  89.425 & 164.233 & {\ttfamily DDDDDDDDDDDDDDDDDDDDDDDDDD} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+This table reports a selection of simulated paths at $t = 25$, showing the terminal
+stock price $S_t$, the running arithmetic average $\bar{S}_t$, and the full sequence
+of up~(U) and down~(D) moves. Paths sharing the same terminal price
+(e.g.\ $S_{25} \approx 748.69$) carry distinct averages (455.51, 456.43, 457.39),
+confirming the path-dependent nature of $\bar{S}_t$ established in
+Figure~\ref{fig:tree_avg}.
+
+\begin{itemize}
+  \item calcualte skewness and kurtosis of these distributions (Erwan)
+\end{itemize}
 
 \subsection{Distribution of the Average}
 
