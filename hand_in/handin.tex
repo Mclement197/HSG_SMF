@@ -112,7 +112,7 @@ normal approximation and a robustness analysis over the key model parameters.
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{graphs/aapl_timeseries.pdf}
-  \caption{Historical daily closing price of Apple Inc. (AAPL) from January 2020 to April 2026.}
+  \caption{Historical daily closing price of Apple Inc. (AAPL) from January 2000 to April 2026.}
   \label{fig:aapl_price}
 \end{figure}
 
@@ -161,14 +161,21 @@ The first three steps of the tree are illustrated in Figure~\ref{fig:tree}.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_moves.pdf}
+  \includegraphics[width=0.6\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_moves.pdf}
   \caption{Binomial tree with 3 periods. Each node contains the stock price at that point in time.}
   \label{fig:tree}
 \end{figure}
 
 In order to compute the prices at different point in,
 we need to multiply the price at the privious node by $u$ (up move) or $d$ (down move).
-The tree then extends upwards after an up move and downwards after a down move.
+The tree then extends upwards after an up move and downwards after a down move, as showin in Figure~\ref{fig:all_S_paths}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{graphs/paths/S_paths_25n.pdf}
+  \caption{All paths of Spots ($S$) up to time terminal nodes ($t=25$)}
+  \label{fig:all_S_paths}
+\end{figure}
 
 At each period $t$, a recombining tree has $t+1$ distinct price nodes. 
 At $t=25$, this gives 26 distinct prices. However, since the Asian
@@ -201,7 +208,7 @@ than the number of periods.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_avg_moves.pdf}
+  \includegraphics[width=0.6\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_avg_moves.pdf}
   \caption{Binomial tree with 3 periods. Each node contains the stock price and the average at that point in time.}
   \label{fig:tree_avg}
 \end{figure}
@@ -309,7 +316,7 @@ worthless and the payoff is zero.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_avg_payoff.pdf}
+  \includegraphics[width=0.6\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_avg_payoff.pdf}
   \caption{Three-period illustration of the payoff construction in the binomial tree. In the actual pricing, terminal payoffs are computed on the full 25-period tree at $t=25$, and $V_0$ is obtained by backward induction from that full tree; the values displayed here are illustrative only.}
   \label{fig:tree_payoff}
 \end{figure}
@@ -747,7 +754,7 @@ from maturity back to the initial node. Essentially we are computing the expecte
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{graphs/backward_induction/backward_induction_tree_25n_first_3_steps.pdf}
+  \includegraphics[width=0.6\textwidth]{graphs/backward_induction/backward_induction_tree_25n_first_3_steps.pdf}
   \caption{Extract of the first three steps of the 25-period backward-induction tree. Only the first displayed nodes are shown, but their option values come from the full 25-period backward-induction computation, not from a truncated 3-period tree.}
   \label{fig:backward_induction_tree}
 \end{figure}
@@ -767,9 +774,53 @@ contract. Note that $V_0$ is lower than the mean terminal payoff
 (15.71) because under the risk-neutral measure $q \approx 0.491$,
 the stock has slightly less chance of going up than under $p = 0.5$,
 leading to a lower expected payoff.
-\begin{itemize}
-  \item show the price of the option being the same with different paths (Erwan)
-\end{itemize}
+
+\subsection{Path-Independence of the Price Contribution}
+
+Although the Asian payoff $V_T = (S_T - \bar{S}_T)^+$ is path-dependent
+through $\bar{S}_T$, two distinct paths through the tree may end at the
+same $(S_T, \bar{S}_T)$ state and therefore contribute identically to
+$V_0$. Scanning the terminal layer of the 25-period tree for shared
+payoffs, we found multiple such pairs. One example is shown in the following table:
+\vspace{1em}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lcc}
+\toprule
+ & Path A & Path B \\
+\midrule
+History (U/D sequence)         & \texttt{\textbf{UDUUD} U$\ldots$U} & \texttt{\textbf{UUDDU} U$\ldots$U} \\
+Number of up-moves             & 23                        & 23 \\
+Number of down-moves           & 2                         & 2 \\
+Terminal price $S_T$           & 685.25                    & 685.25 \\
+Path average $\bar{S}_T$       & 422.32                    & 422.32 \\
+Terminal payoff $V_T$          & 262.93                    & 262.93 \\
+Risk-neutral weight            & $q^{23}(1-q)^2$           & $q^{23}(1-q)^2$ \\
+\bottomrule
+\end{tabular}
+\caption{Two distinct paths producing the same terminal state and therefore
+the same contribution to $V_0$.}
+\label{tab:same-payoff}
+\end{table}
+\vspace{0.3cm}
+
+The two histories differ in the ordering of their two down-moves, yet
+both yield the same terminal price (since $S_T$ depends only on the
+count of up- and down-moves, not their order) and, by algebraic
+coincidence, the same path average. Because the risk-neutral weight
+$q^{n_u}(1-q)^{n_d}$ also depends only on the counts, both paths enter
+the discounted expectation
+\[
+V_0 = \frac{1}{(1+r)^T} \, \mathbb{E}_{\mathbb{Q}}[V_T]
+    = \frac{1}{(1+r)^T}  \sum q^{n_u}(1-q)^{n_d}\, V_T
+\]
+\vspace{0.1em}
+
+with identical weight and identical payoff. They are
+indistinguishable from the option's perspective. This illustrates that
+what matters for pricing is the terminal state $(S_T, \bar{S}_T)$, not
+the specific route taken to reach it.
 
 \subsection{Comparison with Monte Carlo}
 
