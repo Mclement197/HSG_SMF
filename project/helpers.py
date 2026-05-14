@@ -366,5 +366,19 @@ def relative_diff_Bi_Dn() -> float:
 if __name__ == "__main__":
     Bi, tree = get_v0(25, return_tree=True)
 
-    print(get_robustness_matrix_q(tree))
-    print(get_robustness_matrix_v0(tree))
+
+# Pick a non-zero payoff that's shared by at least two paths
+example_V = (
+    duplicates
+    .filter(pl.col("V") > 0)
+    .select(pl.col("V").first())
+    .item()
+)
+
+pair = (
+    terminal
+    .filter(pl.col("V").round(10) == round(example_V, 10))
+    .head(2)
+    .select(["path_id", "history", "S", "S_bar", "V"])
+)
+print(pair)

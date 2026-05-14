@@ -34,18 +34,17 @@ option as a discounted expectation under $\mathbb{Q}$,
 \]
 without specifying any utility function or risk premium. In the remainder of 
 this section, we first derive the formula for $q$ from first principles using 
-the no-arbitrage replicating portfolio argument covered in lecture, examine how 
-$q$ depends on the volatility parameters $u$, $d$ and the interest rate $r$, 
-and then apply it to compute the risk-neutral probabilities for Apple's 
-binomial tree.
+the no-arbitrage replicating portfolio argument covered in lecture within a 
+single-period binomial model, examine how $q$ depends on the volatility 
+parameters $u$, $d$ and the interest rate $r$, and then apply it to compute 
+the risk-neutral probabilities for Apple's binomial tree.
 \vspace{1em}
 
 \subsection{Proving the formula of Q}
--> AJOUTER SINGLE PERIOD MODEL + SELF FINANCING
 
 \noindent To derive the risk-neutral probability $q$, we consider an investor who allocates 
-wealth between the stock $S$ and the bond $B$ by choosing a portfolio 
-$H = (\alpha, \beta)$. The portfolio value at $t=1$ is:
+wealth between the stock $S$ and the bond $B$ by choosing a self-financing
+portfolio $H = (\alpha, \beta)$ in a single-period model. The portfolio value at $t=1$ is:
 
 \vspace{1em}
 \[
@@ -57,15 +56,10 @@ V_1 = \alpha S_1 + \beta \cdot B_1 =
 \end{array}
 \right.
 \]
-\vspace{1em}
-
-\noindent The investor maximises expected utility $\mathbb{E}_{\mathbb{P}}[u(V_1)]$ subject to the budget 
-constraint $\alpha S_0 + \beta B_0 = V_0$. 
--> FIX ISSUE FORMATING
-
 \vspace{2em}
 
-\noindent \uline{The investor's optimisation problem is thus:}
+\noindent The investor maximises expected utility $\mathbb{E}_{\mathbb{P}}[u(V_1)]$ subject to the budget 
+constraint. The investor's optimisation problem is thus:
 
 \[
 \max_{\alpha,\, \beta} \; \mathbb{E}_{\mathbb{P}}\left[u\!\left(\alpha S_1 + \beta \cdot B_1\right)\right]
@@ -272,12 +266,10 @@ $u + d \geq 2\sqrt{ud} = 2$. Combined with $1+r > 1$, we get $(1+r)(u+d) > 2$, s
 numerator $2 - (1+r)(u+d) < 0$. Higher volatility widens the spread $u - d$, so the
 denominator grows faster than the numerator, and $q$ decreases. When moves are
 more extreme, the up state needs less risk-neutral probability to still price assets correctly.
-\vspace{1em}
+\vspace{3em}
 
 \noindent We can see the sensitivity of both factor in the following table.
-\vspace{0.1em}
-
-
+\vspace{1em}
 
 \begin{table}[H]
   \centering
@@ -328,6 +320,7 @@ more extreme, the up state needs less risk-neutral probability to still price as
     \(r = 0.0100\) and \(\sigma = 0.3130\).
   \end{minipage}
 \end{table}
+\vspace{2.5em}
 
 
 \end{document}
