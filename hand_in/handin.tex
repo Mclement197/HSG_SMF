@@ -412,9 +412,10 @@ is a martingale:
 which means the stock offers no expected excess return under $\mathbb{Q}$. 
 This martingale property is central to our project: it allows us to price the 
 option as a discounted expectation under $\mathbb{Q}$,
-\[
-    V_0 = \frac{1}{(1+r)}\,\mathbb{E}_{\mathbb{Q}}[V_1],
-\]
+\begin{equation}
+  V_0 = \frac{1}{(1+r)}\,\mathbb{E}_{\mathbb{Q}}[V_1],
+  \label{get_v0}
+\end{equation}
 without specifying any utility function or risk premium. In the remainder of 
 this section, we first derive the formula for $q$ from first principles using 
 the no-arbitrage replicating portfolio argument covered in lecture, examine how 
@@ -947,49 +948,81 @@ extreme of the parameter space.
 \newpage
 
 
-\section{Normal Approximation}
+\section{Alternative Method}
 \label{sec:normal}
+
+All the steps that we have done to compute the price of the floating-strike Asian 
+call option are long and tideous to compute, especially with a large number of periods $n$.
+That is why we want now to look into another method, using the distribution of the 
+difference between the terminal stock price and the average price $D_n$.
+\subsection{Normal Approximation}
 
 To approximate the price of the floating-strike Asian call, we approximate
 the distribution of
-
-\[
-D_n = S_n - \bar S_n
-\]
+\begin{equation}
+D_n = S_n - \bar S_n,
+\end{equation}
 by a normal distribution,
-
-\[
+\begin{equation}
 D_n \approx N(\mu_D,\sigma_D^2).
-\]
+\end{equation}
 Since
 
-\[
-D_n = \sum_{t=0}^n a_t S_t,
-\]
+\begin{equation}
+  S_n = \frac{1}{n+1}\sum_{i=0}^{n} S_i \iff D_n = (1 - \frac{1}{n+1})S_n- \frac{1}{n+1}\sum_{i=0}^{n-1} S_i
+\end{equation}
+\break
+\noindent we can express $1-\frac{1}{n+1} = \frac{n}{n+1}$ and rewrite:
+\begin{equation}
+  D_n = \sum_{t=0}^n a_t S_t,
+  \label{eq: D_n}
+\end{equation}
+
+\noindent with
+
+\begin{equation}
+  a_t =
+  \begin{cases}
+    -\frac{1}{n+1}, & t=0,\dots,n-1,\\
+    \frac{n}{n+1}, & t=n,
+  \end{cases}
+\end{equation}
+\break
+\noindent We can now compute the mean and variance of $D_n$ from eq.~\ref{eq: D_n}. 
+Since the option is priced under the no-arbitrage assumption, expectations and 
+covariances are computed under the risk-neutral probability measure $\mathbb{Q}$ 
+rather than under the physical probability measure $\mathbb{P}$.
+
+\begin{equation}
+  \mu_D = \mathbb{E}_\mathbb{Q}[D_n] = \sum_{t=0}^n a_t \mathbb E_\mathbb{Q}[S_t] \approx 0.6790  
+\end{equation}
+
+\noindent and
+
+\begin{equation}
+  \sigma_D^2 = \Var_\mathbb{Q}(D_n) = (\mathbb{E}_\mathbb{Q}[D_n^2]) - (\mathbb{E}_\mathbb{Q}[D_n])^2 \approx 1229.94
+\end{equation}
+\break
+Now we apply the same logic as in eq.~\ref{get_v0} under continous time:
+\begin{equation}
+  V_0 = e^{-rT}\mathbb{E}_\mathbb{Q}[(D_n)^+]
+\end{equation}
+\noindent In order to find $\mathbb{E}_\mathbb{Q}[(D_n)^+]$, we use the expected value formula only for positive values:
+\begin{equation}
+  \mathbb{E}_\mathbb{Q}[(D_n)^+] = \int_0^{+\infty} x f_{D_n}(x) dx, 
+  \label{eq: positive_integral}
+\end{equation}
+
 with
 
-\[
-a_t =
-\begin{cases}
--\frac{1}{n+1}, & t=0,\dots,n-1,\\
-\frac{n}{n+1}, & t=n,
-\end{cases}
-\]
-we compute
+\begin{equation}
+  f_{D_n}(x) = \frac{1}{\sigma_D \sqrt{2\pi}} e^{-\frac{(x-\mu_D)^2}{2\sigma_D^2}}
+  \label{eq: derivated_Dn}
+\end{equation}
+\break
+we can plug equation~\ref{eq: derivated_Dn} into the integral from~\ref{eq: positive_integral} and we get:
 
-\[
-\mu_D = \sum_{t=0}^n a_t \mathbb E_Q[S_t] \approx 0.6790
-\]
-and
-
-\[
-\sigma_D^2 =
-\sum_{s=0}^n\sum_{t=0}^n
-a_s a_t \operatorname{Cov}_Q(S_s,S_t) \approx 1229.94.
-\]
-Using the normal approximation, the option price is
-
-\[
+\begin{equation}
 V_0^{N}
 =
 e^{-rT}
@@ -998,8 +1031,8 @@ e^{-rT}
 +
 \mu_D \Phi\left(\frac{\mu_D}{\sigma_D}\right)
 \right] \approx 14.2649.
-\]
-
+\end{equation}
+\break
 This price is then compared to the backward-induction price. The approximation is useful
 because it is computationally faster, but it is not exact because \(D_n\) is not normally
 distributed; it is a function of path-dependent stock prices.
@@ -1009,7 +1042,7 @@ distributed; it is a function of path-dependent stock prices.
     \begin{minipage}{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth]{graphs/distributions/Dn_risk_neutral_normal_approximation.pdf}
-        \caption*{Risk-neutral distribution of \(D_n=S_n-\bar S_n\) and its normal approximation.}
+        \caption*{Risk-neutral distribution of \(D_n=S_n-\bar S_n\) and its normal approximation $D_n \sim_\mathbb{Q} N(\mu_D,\sigma_D^2)$.}
     \end{minipage}
     \hfill
     \begin{minipage}{0.48\textwidth}
@@ -1020,18 +1053,14 @@ distributed; it is a function of path-dependent stock prices.
     \caption{Normal approximation of \(D_n = S_n - \bar S_n\) under the risk-neutral measure and for positive-payoff paths.}
     \label{fig:normal_approximation}
 \end{figure}
-The first figure shows the risk-neutral terminal distribution of
-\[
-D_n = S_n - \bar S_n
-\]
-together with the fitted normal approximation
-
-\[
-D_n \sim_Q N(\mu_D,\sigma_D^2).
-\]
-The histogram is computed using risk-neutral path weights. The normal approximation captures the main mass of the distribution, although the empirical binomial distribution remains slightly skewed.
-The second figure plots
-
+\bigbreak
+Illustrated graphically, the normal approximation of 
+$D_n$ is shown in the first panel of Figure~\ref{fig:normal_approximation}, 
+along with it's normal approximation. The histogram 
+is computed using risk-neutral path weights. The normal 
+approximation captures the main mass of the distribution, 
+although the empirical binomial distribution remains slightly skewed.
+The second figure plots 
 \[
 x^+ f_{D_n}(x),
 \]
@@ -1040,8 +1069,8 @@ whose area corresponds to
 \[
 \mathbb E_Q[(D_n)^+].
 \]
+\break
 After discounting this expectation by \(e^{-rT}\), we obtain the normal approximation price \(V_0^N\).
-
 This is giving us a different in price \(V^{N}_0 - V^{Bi}_0 \approx 0.21\), 
 which means that the approximation with normal distribution is good. 
 This means a relative difference \(\frac{V^{N}_0 - V^{Bi}_0}{V^{Bi}_0} \approx 0.015\) or 1.5\%.
