@@ -111,7 +111,7 @@ normal approximation and a robustness analysis over the key model parameters.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{graphs/aapl_timeseries.png}
+  \includegraphics[width=\textwidth]{graphs/aapl_timeseries.pdf}
   \caption{Historical daily closing price of Apple Inc. (AAPL) from January 2020 to April 2026.}
   \label{fig:aapl_price}
 \end{figure}
@@ -161,7 +161,7 @@ The first three steps of the tree are illustrated in Figure~\ref{fig:tree}.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_moves.png}
+  \includegraphics[width=\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_moves.pdf}
   \caption{Binomial tree with 3 periods. Each node contains the stock price at that point in time.}
   \label{fig:tree}
 \end{figure}
@@ -201,7 +201,7 @@ than the number of periods.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_avg_moves.png}
+  \includegraphics[width=\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_avg_moves.pdf}
   \caption{Binomial tree with 3 periods. Each node contains the stock price and the average at that point in time.}
   \label{fig:tree_avg}
 \end{figure}
@@ -231,13 +231,13 @@ between them that give rise to path-dependence.
 
     \begin{minipage}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{graphs/distributions/C_terminal_distribution_25n.png}
+        \includegraphics[width=\textwidth]{graphs/distributions/C_terminal_distribution_25n.pdf}
         \caption*{Distributions of Sum of Spots ($C$) at Terminal Nodes}
     \end{minipage}
     \hfill
     \begin{minipage}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{graphs/paths/C_paths_12n.png}
+        \includegraphics[width=\textwidth]{graphs/paths/C_paths_12n.pdf}
         \caption*{All paths of Sum of Spots ($C$) up to time \\ \($t=12$\)}
     \end{minipage}
 
@@ -245,13 +245,13 @@ between them that give rise to path-dependence.
 
     \begin{minipage}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{graphs/distributions/S_bar_terminal_distribution_25n.png}
+        \includegraphics[width=\textwidth]{graphs/distributions/S_bar_terminal_distribution_25n.pdf}
         \caption*{Distributions of Arithmetic Averages ($\bar{S}$) at Terminal Nodes}
     \end{minipage}
     \hfill
     \begin{minipage}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{graphs/distributions/S_terminal_distribution_25n.png}
+        \includegraphics[width=\textwidth]{graphs/distributions/S_terminal_distribution_25n.pdf}
         \caption*{Distributions of Stock Prices ($S$) at Terminal Nodes}
     \end{minipage}
     \caption{Terminal-node distributions and paths used to construct the arithmetic average in the binomial tree.}
@@ -309,7 +309,7 @@ worthless and the payoff is zero.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_avg_payoff.png}
+  \includegraphics[width=\textwidth]{graphs/basic_binomial_trees/binomial_tree_3n_avg_payoff.pdf}
   \caption{Three-period illustration of the payoff construction in the binomial tree. In the actual pricing, terminal payoffs are computed on the full 25-period tree at $t=25$, and $V_0$ is obtained by backward induction from that full tree; the values displayed here are illustrative only.}
   \label{fig:tree_payoff}
 \end{figure}
@@ -360,13 +360,13 @@ at every period, i.e. $270 \cdot u^{25} = 321.58$.
   \centering
     \begin{minipage}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{graphs/distributions/V_terminal_distribution_25n.png}
+        \includegraphics[width=\textwidth]{graphs/distributions/V_terminal_distribution_25n.pdf}
         \caption*{Distribution of the Payoffs at terminal nodes $V_T$}
     \end{minipage}
     \hfill
     \begin{minipage}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{graphs/distributions/V_terminal_distribution_25n_excl_zero.png}
+        \includegraphics[width=\textwidth]{graphs/distributions/V_terminal_distribution_25n_excl_zero.pdf}
         \caption*{Distribution of the terminal payoffs $V_T$ excluding $V_T$ = 0}
     \end{minipage}
     \caption{Distribution of terminal option payoffs with and without zero-payoff outcomes.}
@@ -705,7 +705,7 @@ of up moves over $n = 25$ steps, approximated by a normal distribution
 with mean $\mu_q = nq$ and variance $\sigma_q^2 = nq(1-q)$.
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{graphs/distribution_q.png}
+    \includegraphics[width=\textwidth]{graphs/distribution_q.pdf}
     \caption{Risk-Neutral Distribution of Up Moves ($n = 25$ steps, AAPL)}
     \label{fig:distribution_q}
 \end{figure}
@@ -747,7 +747,7 @@ from maturity back to the initial node. Essentially we are computing the expecte
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{graphs/backward_induction/backward_induction_tree_25n_first_3_steps.png}
+  \includegraphics[width=\textwidth]{graphs/backward_induction/backward_induction_tree_25n_first_3_steps.pdf}
   \caption{Extract of the first three steps of the 25-period backward-induction tree. Only the first displayed nodes are shown, but their option values come from the full 25-period backward-induction computation, not from a truncated 3-period tree.}
   \label{fig:backward_induction_tree}
 \end{figure}
@@ -1039,13 +1039,13 @@ distributed; it is a function of path-dependent stock prices.
   \centering
     \begin{minipage}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{graphs/distributions/Dn_risk_neutral_normal_approximation.png}
+        \includegraphics[width=\textwidth]{graphs/distributions/Dn_risk_neutral_normal_approximation.pdf}
         \caption*{Risk-neutral distribution of \(D_n=S_n-\bar S_n\) and its normal approximation.}
     \end{minipage}
     \hfill
     \begin{minipage}{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{graphs/distributions/Dn_positive_payoff_density.png}
+        \includegraphics[width=\textwidth]{graphs/distributions/Dn_positive_payoff_density.pdf}
         \caption*{Positive-payoff density of \(D_n\), used to approximate the expected payoff \(D_n^+\).}
     \end{minipage}
     \caption{Normal approximation of \(D_n = S_n - \bar S_n\) under the risk-neutral measure and for positive-payoff paths.}
@@ -1106,7 +1106,7 @@ graph (mathis)
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{graphs/values_by_n.png}
+  \includegraphics[width=\textwidth]{graphs/values_by_n.pdf}
   \caption{Option price $V_0$ at different values of $n$ (number of periods) up to 25 periods.}
   \label{fig:values_by_n}
 \end{figure}
