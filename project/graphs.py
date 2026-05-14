@@ -1,15 +1,7 @@
+import datetime as dt
 from pathlib import Path
 
 from graphviz import Digraph
-import matplotlib.dates as mdates
-import matplotlib.pyplot as plt
-from matplotlib.ticker import MaxNLocator
-import numpy as np
-import polars as pl
-
-from helpers import get_v0
-import datetime as dt
-
 from helpers import (
     get_AAPL_timeseries,
     get_dn_moments,
@@ -18,6 +10,11 @@ from helpers import (
     get_v0_with_Dn,
     get_vol,
 )
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
+import numpy as np
+import polars as pl
 
 COLORS = {
     "paper": "#ffffff",
@@ -216,6 +213,88 @@ def _with_arithmetic_average(tree: pl.DataFrame) -> pl.DataFrame:
     return tree.with_columns((pl.col("C") / (pl.col("t") + 1)).alias("S_bar"))
 
 
+def _plot_stock_lattice_paths(
+    tree: pl.DataFrame,
+    n: int,
+    output_dir: str | Path,
+) -> str:
+    """Plot stock paths without materialising every terminal path."""
+    if tree.is_empty():
+        raise ValueError(f"No rows found for t <= {n}.")
+
+    if "S" not in tree.columns or "t" not in tree.columns:
+        raise ValueError("Missing required columns: {'t', 'S'}")
+
+    final_t = int(n)
+    filename = f"S_paths_{final_t}n.png"
+    output_path = _prepare_output_path(output_dir, filename)
+    initial_value = float(tree.filter(pl.col("t") == 0).select("S").item())
+
+    if final_t < 1:
+        raise ValueError("n must be at least 1 to plot stock paths.")
+
+    first_step = (
+        tree.filter(pl.col("t") == 1)
+        .select("S")
+        .unique()
+        .sort("S")
+        .to_series()
+        .to_list()
+    )
+
+    if len(first_step) < 2:
+        raise ValueError("Need the up and down stock prices at t = 1.")
+
+    d = float(first_step[0]) / initial_value
+    u = float(first_step[-1]) / initial_value
+
+    fig, ax = _new_figure(figsize=(6.8, 4.0))
+    line_width = 0.85 if final_t <= 12 else 0.48
+    labelled = False
+
+    for t in range(final_t):
+        for n_up in range(t + 1):
+            s_t = initial_value * (u**n_up) * (d ** (t - n_up))
+            label = "Terminal paths" if not labelled else None
+            ax.plot(
+                [t, t + 1],
+                [s_t, s_t * u],
+                color=COLORS["blue"],
+                alpha=1.0,
+                linewidth=line_width,
+                solid_capstyle="round",
+                label=label,
+            )
+            labelled = True
+            ax.plot(
+                [t, t + 1],
+                [s_t, s_t * d],
+                color=COLORS["blue"],
+                alpha=1.0,
+                linewidth=line_width,
+                solid_capstyle="round",
+            )
+
+    ax.axhline(
+        initial_value,
+        color=COLORS["orange"],
+        linewidth=1.2,
+        linestyle=(0, (4, 3)),
+        label=f"Initial value = {_format_value(initial_value)}",
+    )
+
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+    _style_axes(
+        ax,
+        title="",
+        xlabel="Time step",
+        ylabel=_column_label("S"),
+    )
+    _style_legend(ax, loc="upper left")
+
+    return _save_figure(fig, output_path)
+
+
 def _tree_graph() -> Digraph:
     dot = Digraph()
 
@@ -361,6 +440,9 @@ def plot_all_paths(
 ):
     """Plot all terminal paths of a binomial tree."""
     tree = tree.filter(pl.col("t") <= n)
+
+    if value_col == "S":
+        return _plot_stock_lattice_paths(tree, n, output_dir)
 
     if value_col == "S_bar":
         tree = _with_arithmetic_average(tree)
@@ -765,7 +847,9 @@ def plot_backward_induction_last_steps_tree(
     if prefix_history is None:
         prefix_history = "UD" * (start_t // 2) + "U" * (start_t % 2)
 
-    if len(prefix_history) != start_t or any(move not in "UD" for move in prefix_history):
+    if len(prefix_history) != start_t or any(
+        move not in "UD" for move in prefix_history
+    ):
         raise ValueError(f"prefix_history must contain exactly {start_t} U/D moves.")
 
     s0 = (
@@ -1125,6 +1209,7 @@ def get_all_graphs(
 
     return outputs
 
+
 def plot_weighted_dn_distribution_normal(
     tree: pl.DataFrame,
     q: float,
@@ -1166,10 +1251,9 @@ def plot_weighted_dn_distribution_normal(
             pl.col("history").str.count_matches("D").alias("n_down"),
         )
         .with_columns(
-            (
-                (pl.lit(q) ** pl.col("n_up"))
-                * (pl.lit(1 - q) ** pl.col("n_down"))
-            ).alias("q_weight")
+            ((pl.lit(q) ** pl.col("n_up")) * (pl.lit(1 - q) ** pl.col("n_down"))).alias(
+                "q_weight"
+            )
         )
         .select(["Dn", "q_weight"])
         .drop_nulls()
@@ -1218,7 +1302,7 @@ def plot_weighted_dn_distribution_normal(
         normal_density,
         color=COLORS["purple"],
         linewidth=1.75,
-        label=fr"Normal approximation $N({mu:.3f}, {var:.3f})$",
+        label=rf"Normal approximation $N({mu:.3f}, {var:.3f})$",
     )
 
     ax.axvline(
@@ -1226,7 +1310,7 @@ def plot_weighted_dn_distribution_normal(
         color=COLORS["orange"],
         linewidth=1.35,
         linestyle=(0, (4, 3)),
-        label=fr"Risk-neutral mean = {_format_value(mu, 3)}",
+        label=rf"Risk-neutral mean = {_format_value(mu, 3)}",
     )
 
     if show_raw_mean:
@@ -1235,7 +1319,7 @@ def plot_weighted_dn_distribution_normal(
             color=COLORS["muted"],
             linewidth=1.15,
             linestyle=(0, (1, 2)),
-            label=fr"Raw path mean = {_format_value(raw_mean, 3)}",
+            label=rf"Raw path mean = {_format_value(raw_mean, 3)}",
         )
 
     _style_axes(
@@ -1247,6 +1331,7 @@ def plot_weighted_dn_distribution_normal(
     _style_legend(ax)
 
     return _save_figure(fig, output_path)
+
 
 def plot_dn_positive_payoff_density(
     mu: float,
@@ -1287,7 +1372,7 @@ def plot_dn_positive_payoff_density(
         positive_payoff_density,
         color=COLORS["green"],
         linewidth=1.75,
-        label=fr"$x^+ f_{{D_n}}(x)$",
+        label=r"$x^+ f_{D_n}(x)$",
     )
 
     ax.fill_between(
@@ -1309,7 +1394,7 @@ def plot_dn_positive_payoff_density(
     ax.text(
         0.98,
         0.92,
-        fr"$V_0^N \approx {_format_value(discounted_value, 4)}$",
+        rf"$V_0^N \approx {_format_value(discounted_value, 4)}$",
         transform=ax.transAxes,
         ha="right",
         va="top",
@@ -1325,6 +1410,7 @@ def plot_dn_positive_payoff_density(
     _style_legend(ax)
 
     return _save_figure(fig, output_path)
+
 
 if __name__ == "__main__":
     Bi, tree = get_v0(25, return_tree=True)
