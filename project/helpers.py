@@ -361,7 +361,3 @@ def relative_diff_Bi_Dn() -> float:
     Dn_price = get_v0_with_Dn(mu_Dn, var_Dn)
 
     return (Dn_price - Bi) / Bi
-
-
-if __name__ == "__main__":
-    Bi, tree = get_v0(25, return_tree=True)
