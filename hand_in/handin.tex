@@ -221,9 +221,6 @@ nodes with $S=270.71$) carry different averages (283.01 vs 259.88), confirming t
 the arithmetic average is path-dependent and cannot be recovered from the current 
 stock price alone.
 
-\begin{itemize}
-  \item calcualte skewness and kurtosis of these distributions (Erwan)
-\end{itemize}
 
 \subsection{Distribution of the Average}
 
@@ -233,6 +230,15 @@ across all $2^{25} \approx 33$ million paths. These distributions illustrate how
 cumulative price sum $C_T$, the arithmetic average $\bar{S}_T$, and the terminal 
 stock price $S_T$ each behave at maturity, and highlight the fundamental differences 
 between them that give rise to path-dependence.
+
+
+Since $\bar{S}_T$ is a linear rescaling of $C_T$, both distributions 
+share identical standardized moments: a skewness of $0.437$ and an excess kurtosis 
+of $0.193$. The mild right skew reflects the multiplicative structure of the binomial 
+model, where compounding stretches the right tail, while the near-zero excess kurtosis 
+confirms the central limit theorem governs the bulk of the distribution, with only 
+marginal departures from normality.
+
 \begin{figure}[H]
     \centering
 

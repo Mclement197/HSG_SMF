@@ -364,19 +364,19 @@ def relative_diff_Bi_Dn() -> float:
 
     return (Dn_price - Bi) / Bi
 
-if __name__ == "__main__":
-    Bi, tree = get_v0(25, return_tree=True)
+v, tree = get_v0(25, True)
+print(tree.filter(pl.col("t") == 25).select(pl.col("C")))
 
-    n = tree.select(pl.col("t").max()).item()
+c = tree.filter(pl.col("t") == 25).select(pl.col("C")).to_series()
 
-    terminal = tree.filter(pl.col("t") == n)
+mean = c.mean()
+std = c.std()
 
-    duplicates = (
-        terminal
-        .with_columns(pl.col("V").round(10))
-        .with_columns(pl.col("V").count().over("V").alias("n_paths_same_payoff"))
-        .filter(pl.col("n_paths_same_payoff") > 1)
-        .sort(["V", "history"])
-    )
+# Standardized moments
+skewness = ((c - mean) / std).pow(3).mean()
+kurtosis = ((c - mean) / std).pow(4).mean()  # raw kurtosis (normal = 3)
+excess_kurtosis = kurtosis - 3
 
-    print(duplicates.select(["path_id", "history", "S", "S_bar", "V", "n_paths_same_payoff"]))
+print(f"Skewness:         {skewness:.6f}")
+print(f"Kurtosis:         {kurtosis:.6f}")
+print(f"Excess kurtosis:  {excess_kurtosis:.6f}")
