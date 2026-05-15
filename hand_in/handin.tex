@@ -864,22 +864,6 @@ indistinguishable from the option's perspective. This illustrates that
 what matters for pricing is the terminal state $(S_T, \bar{S}_T)$, not
 the specific route taken to reach it.
 
-\subsection{Comparison with Monte Carlo}
-
-As a validation of our backward-induction result, we compare $V_0^{Bi} = \$14.05$ 
-against a Monte Carlo simulation of 500,000 paths with identical parameters ($S_0 = 
-\$270.71$, $\sigma = 31.30\%$, $r = 1\%$, $T = 0.5$, $n = 25$). The Monte Carlo yields 
-a price of $V_0^{MC} = \$13.87$ (95\% CI: [13.80, 13.93]), a difference of \$0.18, 
-or approximately 1.3\%.
-
-This small discrepancy is consistent with the discretisation error inherent to a 
-25-period binomial tree. The binomial model approximates the continuous-time 
-Black-Scholes dynamics by restricting stock price movements to two outcomes per period. 
-With $n = 25$ steps, this approximation is coarse, and the tree price slightly 
-overshoots the Monte Carlo estimate. As $n \to \infty$, the binomial price converges 
-to the true continuous-time price, and the gap would close. The agreement between both 
-methods therefore validates our implementation.
-
 
 \newpage
 
@@ -1157,18 +1141,32 @@ This means a relative difference \(\frac{V^{N}_0 - V^{Bi}_0}{V^{Bi}_0} \approx 0
 \newpage
 
 \section{Conclusion}
-\label{sec:conclusion}
+\label{sec:conclusion} 
 
 \subsection{Summary of Results}
 
-\begin{itemize}
-  \item summary of the results (Andrea)
-  \item limitations of the model (Andrea)
-  \begin{itemize}
-    \item comparaison with MC (Andrea)
-  \end{itemize}
+This assignment priced a European floating-strike Asian call option on Apple Inc. 
+using a multi-period binomial tree with $n = 25$ periods, $T = 0.5$ years, and 
+parameters calibrated on daily AAPL returns from 2020 to 2026 ($S_0 = \$270.71$, 
+$\sigma = 31.31\%$, $r = 1\%$). The path-dependence of the payoff was handled by 
+augmenting the state space with the cumulative sum $C_t$, enabling backward 
+induction under the risk-neutral measure $\mathbb{Q}$.
 
-\end{itemize}
+The main results are as follows. The arbitrage-free price of the option at $t = 0$ 
+is $V_0^{Bi} \approx \$14.05$. This price was validated by two independent methods: 
+a Monte Carlo simulation of 500,000 paths yielding $V_0^{MC} = \$13.87$ (95\% CI: 
+[13.80, 13.93]), and a normal approximation of $D_n = S_n - \bar{S}_n$ yielding 
+$V_0^{N} \approx \$14.26$. Both are within 1.5\% of the binomial price, confirming 
+the robustness of our implementation. The sensitivity analysis further showed that 
+the option price is far more sensitive to volatility than to the risk-free rate, 
+which is typical for short-maturity derivatives.
+
+A key insight of this assignment is that the Asian option cannot be priced by 
+standard backward induction on a recombining tree alone. Because the payoff depends 
+on the full path history through $\bar{S}_T$, two paths reaching the same terminal 
+price $S_T$ can yield different payoffs. Tracking the cumulative sum $C_t$ at each 
+node resolves this issue, at the cost of an exponential growth in the number of 
+paths ($2^n$).
 
 \subsection{Model Limitations and Extensions}
 
