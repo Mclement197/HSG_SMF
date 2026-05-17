@@ -446,7 +446,7 @@ is driven by a small fraction of paths with large terminal gains.
 To price the call option, we cannot directly use the 
 real world probability $p$, the true likelihood of an up or down move, because 
 pricing under $\mathbb{P}$ would require knowing investors' risk preferences, which is not possible. 
-Instead, we work with the \textit{risk-neutral probability} $q$, an artificial 
+Instead, we work with the risk-neutral probability $q$, an artificial 
 probability measure under which all assets earn the risk-free rate $r$ in 
 expectation. Specifically, $q$ is constructed so that the discounted stock price 
 is a martingale:
@@ -602,6 +602,7 @@ Z^d =
        {p \cdot u'(X^u) + (1-p) \cdot u'(X^d)}
 \end{equation}
 
+\smallbreak
 
 \noindent $Z$ satisfies two properties:
 
@@ -721,7 +722,7 @@ q + (1-q)
 \approx 0.491}
 \end{equation}
 
-
+\newpage
 
 \subsection{Relation with volatility and interest rate}
 
@@ -798,34 +799,6 @@ more extreme, the up state needs less risk-neutral probability to still price as
     \(r = 0.0100\) and \(\sigma = 0.3130\).
   \end{minipage}
 \end{table}
-
-\break
-
-
-\subsection{Comparison of Distributions}
-
-Figure~\ref{fig:distribution_q} displays the risk-neutral distribution 
-of up moves over $n = 25$ steps, approximated by a normal distribution 
-with mean $\mu_q = nq$ and variance $\sigma_q^2 = nq(1-q)$.
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{graphs/distribution_q.pdf}
-    \caption{Risk-Neutral Distribution of Up Moves ($n = 25$ steps, AAPL)}
-    \label{fig:distribution_q}
-\end{figure}
-The risk-neutral probability $q \approx 0.491$, derived from the 
-no-arbitrage condition as shown above, depends on $r$ and $\sigma$ rather than 
-historical returns. Unlike the physical probability $p$, which describes 
-the actual likelihood of an up-move, $q$ is a mathematical construct. 
-Since $r < \mu$ under typical market conditions, the risk-neutral 
-probability discounts the upward drift, making $q < p$ as expected.
-
-Comparing skewness and kurtosis between the two is not straightforward, 
-as differences in these moments capture not only beliefs about tail risks 
-but also their pricing. With a skewness of $0.007$ and excess kurtosis 
-of $-0.080$, the distribution of the number of moves under $q$ is nearly symmetric and close to 
-normal, as shown in Figure~\ref{fig:distribution_q}.
-
 
 \newpage
 
@@ -911,8 +884,8 @@ coincidence, the same path average. Because the risk-neutral weight
 $q^{n_u}(1-q)^{n_d}$ also depends only on the counts, both paths enter
 the discounted expectation
 \[
-V_0 = \frac{1}{(1+r)^T} \, \mathbb{E}_{\mathbb{Q}}[V_T]
-    = \frac{1}{(1+r)^T}  \sum q^{n_u}(1-q)^{n_d}\, V_T
+V_0 = e^{-rT} \, \mathbb{E}_{\mathbb{Q}}[V_T]
+    = e^{-rT} \sum q^{n_u}(1-q)^{n_d}\, V_T
 \]
 \vspace{0.1em}
 
@@ -940,6 +913,7 @@ The difference of \$0.18 (approximately 1.3\%) is consistent with the
 discretisation error inherent to a 25-period binomial tree.
 As $n \to \infty$, the binomial price converges to the true continuous-time price,
 and this gap would close. 
+
 To further contextualise the floating-strike price, we also price the Asian option
 under a fixed-strike specification using the LSEG workspace pricer.
 Table~\ref{tab:fixed_strike} reports prices for five representative strikes.
@@ -954,7 +928,7 @@ Table~\ref{tab:fixed_strike} reports prices for five representative strikes.
 
   \begin{tabular}{lrr}
     \toprule
-    \textbf{Description} & \textbf{Strike} $K$ (\$) & \textbf{MC Price} (\$) \\
+    \textbf{Description} & \textbf{Strike} $K$ (\$) & \textbf{Price} (\$) \\
     \midrule
     Minimum          & 164.38 & 106.81 \\
     $\mu - \sigma$   & 249.03 & 26.29 \\
@@ -980,9 +954,16 @@ the minimum (\$164.38) yields a price of \$106.81, while a strike at the maximum
 close to our floating-strike price of \$14.05, which is consistent with the fact 
 that the floating strike is close to the mean of $S_T$ by construction.
 
+\newpage
+\subsection{Sensitivity Analysis}
+
+Having compared the floating-strike price with fixed-strike Asian option prices, 
+we now examine how robust the binomial tree valuation is to changes in the two 
+main calibration inputs, namely the risk-free rate and volatility.
+
 \begin{table}[H]
   \centering
-  \caption{Sensitivity of the option value to interest rates and volatilities}
+  \caption{Sensitivity of the option value to interest rates and volatilities from Binomial Tree}
   \label{tab:sensitivity_option_values_rates_volatility}
 
   \small
@@ -1203,7 +1184,7 @@ This means a relative difference \(\frac{V^{N}_0 - V^{Bi}_0}{V^{Bi}_0} \approx 0
 
 
 
-This assignment priced a European floating-strike Asian call option on Apple Inc.
+The goal of the assignment was to price a European floating-strike Asian call option on Apple Inc.
 using a multi-period binomial tree with $n = 25$ periods, $T = 0.5$ years, and
 parameters calibrated on daily AAPL returns from 2020 to 2026
 ($S_0 = \text{\$}270.71$, $\sigma = 31.31\%$, $r = 1\%$).
@@ -1256,7 +1237,7 @@ result.
 Finally, using a 
 time-varying volatility instead of a constant $\sigma$ would better 
 reflect Apple's real behaviour, and would allow us to capture the 
-volatility skew and smile observed in Black-Scholes implied volatilities. 
+volatility skew observed in Black-Scholes implied volatilities. 
 However, this extension is computationally demanding in our case, as the 
 path-dependency of the Asian option combined with a time-varying 
 volatility would cause the tree to grow exponentially, as the number 
@@ -1291,5 +1272,10 @@ of nodes would scale as $2^n$ instead of $n+1$.
 
 \vspace{0.5cm}
 
-By submitting this thesis, we confirm through our conclusive action that we are submitting the Declaration of Authorship, that we have read and understood it, and that it is true.
+\noindent By submitting this thesis, we confirm through our conclusive action that we are submitting the Declaration of Authorship, that we have read and understood it, and that it is true.
+
+\bigbreak
+\noindent \textbf{Signature}: Juliette Binz, Andrea Cimoli, Mathis Clement, Erwan Rollin 
+
+\hfill \textbf{Date}: \today
 \end{document}
