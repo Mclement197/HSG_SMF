@@ -173,7 +173,7 @@ The first three steps of the tree are illustrated in Figure~\ref{fig:tree}.
   \label{fig:tree}
 \end{figure}
 
-In order to compute the prices at different point in,
+In order to compute the prices at different point in time,
 we need to multiply the price at the privious node by $u$ (up move) or $d$ (down move).
 The tree then extends upwards after an up move and downwards after a down move, as showin in Figure~\ref{fig:all_S_paths}.
 
@@ -702,10 +702,7 @@ q + (1-q)
 
 
 \noindent This is the risk-neutral probability: the unique value of $q$ consistent with no-arbitrage, independent of any investor's preferences. 
-
-
-
-\noindent Now, we apply the formula in the discrete binomial tree with continuously compounded risk-free growth over one time step:
+Now, we apply the formula in the discrete binomial tree with continuously compounded risk-free growth over one time step using:
 
 \begin{equation}
   u = e^{\sigma \sqrt{\Delta t}} \approx 1.045,
@@ -849,17 +846,12 @@ through $\bar{S}_T$, two distinct paths through the tree may end at the
 same $(S_T, \bar{S}_T)$ state and therefore contribute identically to
 $V_0$. Scanning the terminal layer of the 25-period tree for shared
 payoffs, we found multiple such pairs. One example is shown in the following table:
-\vspace{1em}
 
 \begin{table}[H]
   \centering
   \caption{Two distinct paths producing the same terminal state and therefore
   the same contribution to $V_0$.}
   \label{tab:same-payoff}
-
-  \small
-  \setlength{\tabcolsep}{6pt}
-  \renewcommand{\arraystretch}{1.15}
 
   \begin{tabular}{lcc}
     \toprule
@@ -875,7 +867,6 @@ payoffs, we found multiple such pairs. One example is shown in the following tab
     \bottomrule
   \end{tabular}
 \end{table}
-\vspace{0.3cm}
 
 The two histories differ in the ordering of their two down-moves, yet
 both yield the same terminal price (since $S_T$ depends only on the
@@ -883,11 +874,10 @@ count of up- and down-moves, not their order) and, by algebraic
 coincidence, the same path average. Because the risk-neutral weight
 $q^{n_u}(1-q)^{n_d}$ also depends only on the counts, both paths enter
 the discounted expectation
-\[
+\begin{equation}
 V_0 = e^{-rT} \, \mathbb{E}_{\mathbb{Q}}[V_T]
     = e^{-rT} \sum q^{n_u}(1-q)^{n_d}\, V_T
-\]
-\vspace{0.1em}
+\end{equation}
 
 \noindent with identical weight and identical payoff. They are
 indistinguishable from the option's perspective. This illustrates that
@@ -906,7 +896,7 @@ the specific route taken to reach it.
 
 As a robustness check, we compare our binomial tree price against a Monte Carlo
 simulation using 500{,}000 paths with identical parameters
-($S_0$, $\sigma = 31.30\%$, $r = 1\%$, $T = 0.5$ years, $n = 25$ periods).
+($S_0$, $\sigma = 31.30\%$, $r = 1\%$, $T = 0.5$ years).
 The Monte Carlo yields a price of \$13.87 (95\% CI: [13.80,\,13.93]),
 which is close to our backward-induction price of $V_0^{\mathrm{Bi}} = \$14.05$.
 The difference of \$0.18 (approximately 1.3\%) is consistent with the
