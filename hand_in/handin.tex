@@ -204,6 +204,7 @@ In order to compute the average at maturity, we apply the classical arithmetic a
   \bar{S}_n = \frac{1}{n+1} \sum_{j=0}^{n} S_j.
   \label{eq:Arithmetic Average}
 \end{equation}
+
 At maturity ($t = 25$), $C_{25}$ contains the sum of all prices from
 $S_0$ to $S_{25}$. We then divide by $n+1 = 26$ to obtain the average
 $\bar{S}_n = C_{25}/26$. We use n + 1 in the denominator instead of n 
@@ -348,6 +349,7 @@ value. The payoff of a European floating-strike Asian call option can be written
 \begin{equation}
 A_T = \max\!\left(S_n - \frac{1}{n+1}\sum_{t=0}^{n} S_t,\ 0\right) := (S_n - \bar{S}_n)^+,
 \end{equation}
+
 The option pays off when the terminal price exceeds the realized arithmetic average when \(S_T > \bar{S}_T\), a
 structure that is path-dependent, as the payoff cannot be recovered from the
 terminal price alone.
@@ -914,7 +916,7 @@ V_0 = \frac{1}{(1+r)^T} \, \mathbb{E}_{\mathbb{Q}}[V_T]
 \]
 \vspace{0.1em}
 
-with identical weight and identical payoff. They are
+\noindent with identical weight and identical payoff. They are
 indistinguishable from the option's perspective. This illustrates that
 what matters for pricing is the terminal state $(S_T, \bar{S}_T)$, not
 the specific route taken to reach it.
@@ -1149,6 +1151,7 @@ e^{-rT}
 \right] \approx 14.2649.
 \end{equation}
 \break
+
 This price is then compared to the backward-induction price. The approximation is useful
 because it is computationally faster, but it is not exact because \(D_n\) is not normally
 distributed; it is a function of path-dependent stock prices.
@@ -1186,6 +1189,7 @@ whose area corresponds to
 \mathbb E_Q[(D_n)^+].
 \]
 \break
+
 After discounting this expectation by \(e^{-rT}\), we obtain the normal approximation price \(V_0^N\).
 This is giving us a different in price \(V^{N}_0 - V^{Bi}_0 \approx 0.21\), 
 which means that the approximation with normal distribution is relatively accurate. 
